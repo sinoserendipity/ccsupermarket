@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日营业额结算</title>
+  <style>
+    label, input, span {
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+    label {
+          cursor: pointer;
+          display: inline-block;
+          padding: 3px 6px;
+          text-align: right;
+          width: 100px;
+          vertical-align: top;
+    }
+    input {
+          border: 1px solid #ccc;
+          font-size: inherit;
+    }
+    table {
+        border-collapse: collapse;
+          width: 300px;
+    }
+    th, td {
+        border: 1px solid black;
+        padding: 8px;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .gradient-button {
+      background-image: linear-gradient(to bottom right, #4facfe, #00f2fe);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body onload="showDate()">
+  <h1 id="currentDate"></h1>
+  <h1>日营业额结算</h1>
+  <form>
+    <div>
+      <label for="cashBegin">Cash Begin: </label>
+      <input type="number" id="inputCashBegin" oninput="calculateCashBegin()" value="192" style="width: 100px;">
+      <span id="amountCashBegin">$192.00</span>
+    </div>
+    <div>
+      <label for="input100">$ 100 * </label>
+      <input type="number" id="input100" oninput="calculate(100)" value="0" style="width: 100px;">
+      <span id="amount100">$0.00</span>
+    </div>
+    <div>
+      <label for="input50">$ 50 * </label>
+      <input type="number" id="input50" oninput="calculate(50)" value="0" style="width: 100px;">
+      <span id="amount50">$0.00</span>
+    </div>
+    <div>
+      <label for="input20">$ 20 * </label>
+      <input type="number" id="input20" oninput="calculate(20)" value="0" style="width: 100px;">
+      <span id="amount20">$0.00</span>
+    </div>
+    <div>
+      <label for="input10">$ 10 * </label>
+      <input type="number" id="input10" oninput="calculate(10)" value="0" style="width: 100px;">
+      <span id="amount10">$0.00</span>
+    </div>
+    <div>
+      <label for="input5">$ 5 * </label>
+      <input type="number" id="input5" oninput="calculate(5)" value="0" style="width: 100px;">
+      <span id="amount5">$0.00</span>
+    </div>
+    <div>
+      <label for="input2">$ 2 * </label>
+      <input type="number" id="input2" oninput="calculate(2)" value="0" style="width: 100px;">
+      <span id="amount2">$0.00</span>
+    </div>
+    <div>
+      <label for="input1">$ 1 * </label>
+      <input type="number" id="input1" oninput="calculate(1)" value="0" style="width: 100px;">
+      <span id="amount1">$0.00</span>
+    </div>
+    <div>
+      <label for="input0.25">$ 0.25 * </label>
+      <input type="number" id="input0.25" oninput="calculate(0.25)" value="0" style="width: 100px;">
+      <span id="amount0.25">$0.00</span>
+    </div>
+    <div>
+      <label for="input0.1">$ 0.1 * </label>
+      <input type="number" id="input0.1" oninput="calculate(0.1)" value="0" style="width: 100px;">
+      <span id="amount0.1">$0.00</span>
+    </div>
+    <div>
+      <label for="input0.05">$ 0.05 * </label>
+      <input type="number" id="input0.05" oninput="calculate(0.05)" value="0" style="width: 100px;">
+      <span id="amount0.05">$0.00</span>
+    </div>
+    <!-- Add other input fields similarly -->
+    <div>
+      <label for="inputCashPrint">Cash Print: </label>
+      <input type="number" id="inputCashPrint" oninput="calculateCashPrint()" value="0" style="width: 100px;">
+      <span id="amountCashPrint">$0.00</span>
+    </div>
+    <div>
+      <label for="inputDebitCardBegin">Debit Begin: </label>
+      <input type="number" id="inputDebitCardBegin" oninput="calculateDebitCardBegin()" value="0" style="width: 100px;">
+      <span id="amountDebitCardBegin">$0.00</span>
+    </div>
+    <div>
+      <label for="inputDebitCard">Debit End: </label>
+      <input type="number" id="inputDebitCard" oninput="calculateDebitCard()" value="0" style="width: 100px;">
+      <span id="amountDebitCard">$0.00</span>
+    </div>
+    <div>
+      <label for="inputCreditCardBegin">Credit Begin: </label>
+      <input type="number" id="inputCreditCardBegin" oninput="calculateCreditCardBegin()" value="0" style="width: 100px;">
+      <span id="amountCreditCardBegin">$0.00</span>
+    </div>
+    <div>
+      <label for="inputCreditCard">Credit End: </label>
+      <input type="number" id="inputCreditCard" oninput="calculateCreditCard()" value="0" style="width: 100px;">
+      <span id="amountCreditCard">$0.00</span>
+    </div>
+    <div>
+      <label for="inputPosPrint">POS Print: </label>
+      <input type="number" id="inputPosPrint" oninput="calculatePosPrint()" value="0" style="width: 100px;">
+      <span id="amountPosPrint">$0.00</span>
+    </div>
+  </form>
+
+  <button class="gradient-button" onclick="saveData()">Save Input Data</button>
+  <button class="gradient-button" onclick="loadData()">Load Input Data</button>
+  
+  <br />
+  <br />
+
+  <table id="table-to-print">
+    <tr>
+        <th>金额种类</th>
+        <th>金额值</th>
+    </tr>
+    <tr>
+        <td>纸币总金额</td>
+        <td align="right"><span id="billAmount">$0.00</span></td>
+    </tr>
+    <tr>
+        <td>硬币总金额</td>
+        <td align="right"><span id="coinAmount">$0.00</span></td>
+    </tr>
+    <tr>
+      <td><strong>期末总金额</strong></td>
+      <td align="right"><span id="cashTotalAmount">$0.00</span></td>
+    </tr>
+    <tr>
+      <td>期初总金额</td>
+      <td align="right"><span id="cashBeginAmount">$192.00</span></td>
+    </tr>
+    <tr>
+      <td><strong>Cash Balance</strong></td>
+      <td align="right"><span id="cashBalance">$0.00</span></td>
+    </tr>
+    <tr>
+      <td>Cash Print</td>
+      <td align="right"><span id="cashPrint">$0.00</span></td>
+    </tr>
+    <tr>
+      <td><strong>Balance</strong></td>
+      <td align="right"><span id="balanceAmount">$0.00</span></td>
+    </tr>
+    <tr>
+      <td>Debit Card</td>
+      <td align="right"><span id="debitCardTotalAmount">$0.00</span></td>
+    </tr>
+    <tr>
+      <td>Credit Card</td>
+      <td align="right"><span id="creditCardTotalAmount">$0.00</span></td>
+    </tr>
+    <tr>
+      <td><strong>POS Total</strong></td>
+      <td align="right"><span id="posTotalAmount">$0.00</span></td>
+    </tr>
+    <tr>
+      <td>POS Print</td>
+      <td align="right"><span id="posPrintAmount">$0.00</span></td>
+    </tr>
+    <tr>
+      <td><strong>POS Balance</strong></td>
+      <td align="right"><span id="posBalanceAmount">$0.00</span></td>
+    </tr>
+  </table>
+
+  <br />
+
+  <button class="gradient-button" onclick="printTable()">Print Table</button>
+  
+  <script>
+    const denominations = [100, 50, 20, 10, 5, 2, 1, 0.25, 0.1, 0.05];
+    let amounts = new Array(denominations.length).fill(0);
+    
+    function calculate(index) {
+      let inputId = 'input' + index;
+      let amountId = 'amount' + index;
+      let quantity = document.getElementById(inputId).value;
+      let amount = quantity * index;
+      amounts[denominations.indexOf(index)] = amount;
+      document.getElementById(amountId).innerText = '$' + amount.toFixed(2);
+      
+      updateTotalAmount();
+    }
+
+    function calculateCashBegin() {
+      let cashBeginAmount = document.getElementById('inputCashBegin').value;
+      document.getElementById('amountCashBegin').innerText = '$' + parseFloat(cashBeginAmount).toFixed(2);
+
+      updateTotalAmount();
+    }
+
+    function calculateDebitCardBegin(){
+      let debitCardBeginAmount = document.getElementById('inputDebitCardBegin').value;
+      document.getElementById('amountDebitCardBegin').innerText = '$' + parseFloat(debitCardBeginAmount).toFixed(2);
+
+      updateTotalAmount();
+    }
+
+    function calculateCreditCardBegin(){
+      let creditCardBeginAmount = document.getElementById('inputCreditCardBegin').value;
+      document.getElementById('amountCreditCardBegin').innerText = '$' + parseFloat(creditCardBeginAmount).toFixed(2);
+
+      updateTotalAmount();
+
+    }
+
+    function calculateCreditCard() {
+      let creditCardAmount = document.getElementById('inputCreditCard').value;
+      document.getElementById('amountCreditCard').innerText = '$' + parseFloat(creditCardAmount).toFixed(2);
+      
+      updateTotalAmount();
+    }
+
+    function calculateDebitCard() {
+      let debitCardAmount = document.getElementById('inputDebitCard').value;
+      document.getElementById('amountDebitCard').innerText = '$' + parseFloat(debitCardAmount).toFixed(2);
+
+      updateTotalAmount();
+    }
+
+    function calculateCashPrint() {
+      let cashPrintAmount = document.getElementById('inputCashPrint').value;
+      document.getElementById('amountCashPrint').innerText = '$' + parseFloat(cashPrintAmount).toFixed(2);
+
+      updateTotalAmount();
+    }
+
+    function calculatePosPrint() {
+      let posPrintAmount = document.getElementById('inputPosPrint').value;
+      document.getElementById('amountPosPrint').innerText = '$' + parseFloat(posPrintAmount).toFixed(2);
+
+      updateTotalAmount();
+
+    }
+
+    function updateTotalAmount() {
+      let billTotal = amounts.slice(0,5).reduce((acc, curr) => acc + curr, 0);
+      document.getElementById('billAmount').innerText = '$' + billTotal.toFixed(2);
+
+      let coinTotal = amounts.slice(-5).reduce((acc, curr) => acc + curr, 0);
+      document.getElementById('coinAmount').innerText = '$' + coinTotal.toFixed(2);
+      
+      let cashTotal = amounts.reduce((acc, curr) => acc + curr, 0);
+      document.getElementById('cashTotalAmount').innerText = '$' + cashTotal.toFixed(2);
+
+      let cashBeginTotal = parseFloat(document.getElementById('inputCashBegin').value);
+      document.getElementById('cashBeginAmount').innerText = '$' + cashBeginTotal.toFixed(2);
+
+      let cashPrint = parseFloat(document.getElementById('inputCashPrint').value);
+      document.getElementById('cashPrint').innerText = '$' + cashPrint.toFixed(2);
+      
+      let cashBalance = cashTotal - cashBeginTotal;
+      let cashBalanceElement = document.getElementById('cashBalance');
+      cashBalanceElement.innerText = '$' + cashBalance.toFixed(2);
+      cashBalanceElement.style.color = cashBalance < 0 ? 'red' : 'green';
+
+      let balance = cashBalance - cashPrint;
+      let balanceElement = document.getElementById('balanceAmount');
+      balanceElement.innerText = '$' + balance.toFixed(2);
+      balanceElement.style.color = balance < 0 ? 'red' : 'green';
+            
+      let debitCardTotal = parseFloat(document.getElementById('inputDebitCard').value) - parseFloat(document.getElementById('inputDebitCardBegin').value);
+      document.getElementById('debitCardTotalAmount').innerText = '$' + debitCardTotal.toFixed(2);
+
+      let creditCardTotal = parseFloat(document.getElementById('inputCreditCard').value) - parseFloat(document.getElementById('inputCreditCardBegin').value);
+      document.getElementById('creditCardTotalAmount').innerText = '$' + creditCardTotal.toFixed(2);
+
+      let posTotal = creditCardTotal + debitCardTotal;
+      document.getElementById('posTotalAmount').innerText = '$' + posTotal.toFixed(2);
+
+      let posPrintTotal = parseFloat(document.getElementById('inputPosPrint').value);
+      document.getElementById('posPrintAmount').innerText = '$' + posPrintTotal.toFixed(2);
+
+      let posBalanceTotal = posTotal - posPrintTotal;
+      let postBalanceElement = document.getElementById('posBalanceAmount');
+      postBalanceElement.innerText = '$' + posBalanceTotal.toFixed(2);
+      postBalanceElement.style.color = posBalanceTotal < 0 ? 'red' : 'green';
+                 
+    }
+    
+    function showDate() {
+      var today = new Date();
+      var date = today.getFullYear() + '年' + (today.getMonth() + 1) + '月' + today.getDate() + '日';
+      var weekday = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+      var day = weekday[today.getDay()];
+      
+      document.getElementById("currentDate").innerHTML = date + ' ' + day;
+
+      return date + ' ' + day; 
+
+    }
+
+    function saveData() {
+      const inputs = ['100', '50', '20', '10', '5', '2', '1', '0.25', '0.1', '0.05', 'CashPrint', 'DebitCardBegin', 'DebitCard', 'CreditCardBegin', 'CreditCard', 'PosPrint'];
+      const data = {};
+      inputs.forEach(input => data[`input${input}Save`] = document.getElementById(`input${input}`).value);
+      localStorage.setItem('currencyCalculatorData', JSON.stringify(data));
+
+      alert('Data Saved');
+    }
+
+    function loadData() {
+      const data = JSON.parse(localStorage.getItem('currencyCalculatorData'));
+      Object.entries(data).forEach(([key, value]) => document.getElementById(key.replace('Save', '')).value = value);
+
+      const currencyValues = [100, 50, 20, 10, 5, 2, 1, 0.25, 0.1, 0.05];
+      currencyValues.forEach((value) => calculate(value));
+      [
+       calculateCashPrint,
+       calculateDebitCardBegin,
+       calculateDebitCard,
+       calculateCreditCardBegin,
+       calculateCreditCard,
+       calculatePosPrint,
+      ].forEach((func) => func());
+    
+      updateTotalAmount();
+
+      alert("Data Loaded");
+
+    }
+
+    function printTable() {
+      var currentdatePrint = showDate();
+      var cashbeginPrint = document.getElementById('inputCashBegin').value;
+      var input100Print = document.getElementById('input100').value;
+      var input50Print = document.getElementById('input50').value;
+      var input20Print = document.getElementById('input20').value;
+      var input10Print = document.getElementById('input10').value;
+      var input5Print = document.getElementById('input5').value;
+      var input2Print = document.getElementById('input2').value;
+      var input1Print = document.getElementById('input1').value;
+      var input025Print = document.getElementById('input0.25').value;
+      var input01Print = document.getElementById('input0.1').value;
+      var input005Print = document.getElementById('input0.05').value;
+      var tableContent = document.getElementById('table-to-print').outerHTML;
+      var printWindow = window.open('', '_blank');
+      printWindow.document.write('<html><head><title>长城超市 Marché C&C </title>');
+      printWindow.document.write('<style>@media print { table { border-collapse: collapse; width: 40%; } th, td { border: 1px solid black; padding: 8px; text-align: right; } th { background-color: #f2f2f2; font-weight: bold; } }</style>');
+      printWindow.document.write('</head><body>');
+      printWindow.document.write('<p>' + currentdatePrint + ' 日营业额结算</p>'); // 在这里添加日期
+      printWindow.document.write('<table>');
+      printWindow.document.write('<tr><th>Cash Begin</th><td>' + '$ ' + cashbeginPrint + '</td></tr>');
+      printWindow.document.write('</table>');
+      printWindow.document.write('<br />');
+      printWindow.document.write('<table>');
+      printWindow.document.write('<tr><th>Bill $ 100</th><td>' + input100Print + '</td>' + '<td>' + ' $ ' + (input100Print * 100).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('<tr><th>Bill $ 50</th><td>' + input50Print + '</td>' + '<td>' + ' $ ' + (input50Print * 50).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('<tr><th>Bill $ 20</th><td>' + input20Print + '</td>' + '<td>' + ' $ ' + (input20Print * 20).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('<tr><th>Bill $ 10</th><td>' + input10Print + '</td>' + '<td>' + ' $ ' + (input10Print * 10).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('<tr><th>Bill $ 5</th><td>' + input5Print + '</td>' + '<td>' + ' $ ' + (input5Print * 5).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('<tr><th>Coin $ 2</th><td>' + input2Print + '</td>' + '<td>' + ' $ ' + (input2Print * 2).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('<tr><th>Coin $ 1</th><td>' + input1Print + '</td>' + '<td>' + ' $ ' + (input1Print * 1).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('<tr><th>Coin $ 0.25</th><td>' + input025Print + '</td>' + '<td>' + ' $ ' + (input025Print * 0.25).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('<tr><th>Coin $ 0.1</th><td>' + input01Print + '</td>' + '<td>' + ' $ ' + (input01Print * 0.1).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('<tr><th>Coin $ 0.05</th><td>' + input005Print + '</td>' + '<td>' + ' $ ' + (input005Print * 0.05).toFixed(2) + '</td></td></tr>');
+      printWindow.document.write('</table>');
+      printWindow.document.write('<br />');
+      printWindow.document.write(tableContent);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.print();
+    }
+
+  </script>
+  
+</body>
+</html>
