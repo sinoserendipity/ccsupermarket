@@ -1,1 +1,1 @@
-# ccsupermarket
+## 超市日结算简单HTML计算器
