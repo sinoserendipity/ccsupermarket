@@ -43,11 +43,18 @@
       cursor: pointer;
     }
 
+    #weather-container {
+            font-size: 20px; /* Adjust the font size as needed */
+        }
+
   </style>
 </head>
 <body onload="showDate()">
   <h1 id="currentDate"></h1>
   <h1>日营业额结算</h1>
+  <div id="weather-container">
+    <p>Loading weather information...</p>
+  </div>
   <form>
     <div>
       <label for="cashBegin">Cash Begin: </label>
@@ -396,6 +403,31 @@
       printWindow.document.close();
       printWindow.print();
     }
+
+    function updateWeather(data) {
+        document.getElementById("weather-container").innerHTML = "<pre>" + data + "</pre>";
+    }
+
+    // Function to handle errors during the fetch
+    function handleErrors(response) {
+        if (!response.ok) {
+            throw Error(response.statusText);
+        }
+        return response;
+    }
+
+    // Make the fetch request to wttr.in with the desired format
+    fetch("https://wttr.in/Montreal?format=%l:+%c+%t+feels+like+%f\n%0ASunrise:+%S\n+Sunset:+%s\n%0AMoon:+%m\n", {
+        method: 'GET',
+        headers: {
+            'Accept-Language': 'en-US', // Set the desired language here
+        }
+    })
+
+    .then(handleErrors)
+    .then(response => response.text())
+    .then(updateWeather)
+    .catch(error => console.error('Error fetching weather:', error));
 
   </script>
   
