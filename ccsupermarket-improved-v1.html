@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日营业额结算</title>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --secondary: #6b7280;
+      --success: #10b981;
+      --success-dark: #059669;
+      --danger: #ef4444;
+      --danger-dark: #dc2626;
+      --background: #f3f4f6;
+      --card-bg: #ffffff;
+      --text: #1f2937;
+      --border: #d1d5db;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 1rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      color: var(--primary-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    #currentDate {
+      font-size: 1rem;
+      color: var(--secondary);
+      font-weight: normal;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 0.5rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group:last-child { margin-bottom: 0; }
+
+    label {
+      flex: 0 0 100px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: right;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      min-width: 0;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .amount-display {
+      flex: 0 0 120px;
+      text-align: right;
+      font-weight: 600;
+      color: var(--success);
+      font-variant-numeric: tabular-nums;
+    }
+
+    #weather-container {
+      text-align: center;
+      padding: 0.75rem;
+      background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    #weather-container .loading {
+      color: var(--secondary);
+      font-style: italic;
+    }
+
+    #weather-container .error {
+      color: var(--danger);
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:active { transform: translateY(1px); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, var(--success), var(--success-dark));
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+      color: white;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--background);
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    td[align="right"] {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    .amount-display.negative,
+    td[align="right"] .negative {
+      color: var(--danger) !important;
+    }
+
+    tfoot tr {
+      background: var(--background);
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .print-only {
+      display: none;
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .card { box-shadow: none; border: 1px solid #ddd; }
+      .button-group, #weather-container { display: none !important; }
+      table { width: 100% !important; font-size: 12pt; }
+      th { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .no-print { display: none !important; }
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group { flex-wrap: wrap; }
+      label { flex: 0 0 100%; text-align: left; margin-bottom: 0.25rem; }
+      .amount-display { flex: 1; text-align: left; }
+      .button-group { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 id="currentDate"></h1>
+      <h2>日营业额结算</h2>
+    </header>
+
+    <div id="weather-container" aria-live="polite">
+      <p class="loading">正在加载天气信息...</p>
+    </div>
+
+    <form id="settlement-form">
+      <div class="card">
+        <h2>现金</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="inputCashBegin">期初现金</label>
+            <input type="number" id="inputCashBegin" data-calc="cash_begin" min="0" step="0.01" value="192">
+            <span class="amount-display" id="amountCashBegin">$192.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input100">$100 ×</label>
+            <input type="number" id="input100" data-calc="bill" data-denom="100" min="0" step="1" value="0">
+            <span class="amount-display" id="amount100">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input50">$50 ×</label>
+            <input type="number" id="input50" data-calc="bill" data-denom="50" min="0" step="1" value="0">
+            <span class="amount-display" id="amount50">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input20">$20 ×</label>
+            <input type="number" id="input20" data-calc="bill" data-denom="20" min="0" step="1" value="0">
+            <span class="amount-display" id="amount20">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input10">$10 ×</label>
+            <input type="number" id="input10" data-calc="bill" data-denom="10" min="0" step="1" value="0">
+            <span class="amount-display" id="amount10">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input5">$5 ×</label>
+            <input type="number" id="input5" data-calc="bill" data-denom="5" min="0" step="1" value="0">
+            <span class="amount-display" id="amount5">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input2">$2 ×</label>
+            <input type="number" id="input2" data-calc="coin" data-denom="2" min="0" step="1" value="0">
+            <span class="amount-display" id="amount2">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input1">$1 ×</label>
+            <input type="number" id="input1" data-calc="coin" data-denom="1" min="0" step="1" value="0">
+            <span class="amount-display" id="amount1">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input0.25">$0.25 ×</label>
+            <input type="number" id="input0.25" data-calc="coin" data-denom="0.25" min="0" step="1" value="0">
+            <span class="amount-display" id="amount0.25">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input0.1">$0.10 ×</label>
+            <input type="number" id="input0.1" data-calc="coin" data-denom="0.1" min="0" step="1" value="0">
+            <span class="amount-display" id="amount0.1">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="input0.05">$0.05 ×</label>
+            <input type="number" id="input0.05" data-calc="coin" data-denom="0.05" min="0" step="1" value="0">
+            <span class="amount-display" id="amount0.05">$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>结算辅助</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="inputCashPrint">Cash Print</label>
+            <input type="number" id="inputCashPrint" data-calc="cash_print" min="0" step="0.01" value="0">
+            <span class="amount-display" id="amountCashPrint">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="inputDebitCardBegin">Debit Begin</label>
+            <input type="number" id="inputDebitCardBegin" data-calc="debit_begin" min="0" step="0.01" value="0">
+            <span class="amount-display" id="amountDebitCardBegin">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="inputDebitCard">Debit End</label>
+            <input type="number" id="inputDebitCard" data-calc="debit" min="0" step="0.01" value="0">
+            <span class="amount-display" id="amountDebitCard">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="inputCreditCardBegin">Credit Begin</label>
+            <input type="number" id="inputCreditCardBegin" data-calc="credit_begin" min="0" step="0.01" value="0">
+            <span class="amount-display" id="amountCreditCardBegin">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="inputCreditCard">Credit End</label>
+            <input type="number" id="inputCreditCard" data-calc="credit" min="0" step="0.01" value="0">
+            <span class="amount-display" id="amountCreditCard">$0.00</span>
+          </div>
+          <div class="form-group">
+            <label for="inputPosPrint">POS Print</label>
+            <input type="number" id="inputPosPrint" data-calc="pos_print" min="0" step="0.01" value="0">
+            <span class="amount-display" id="amountPosPrint">$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn btn-primary" onclick="saveData()" aria-label="保存当前输入数据">
+          💾 保存
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="loadData()" aria-label="加载上次保存的数据">
+          📂 加载
+        </button>
+        <button type="button" class="btn btn-accent" onclick="printTable()" aria-label="打印结算表格">
+          🖨️ 打印
+        </button>
+        <button type="button" class="btn btn-danger" onclick="resetForm()" aria-label="清空所有输入">
+          🗑️ 清空
+        </button>
+      </div>
+
+      <div class="card no-print">
+        <h2>结算汇总</h2>
+        <table id="summary-table">
+          <tbody>
+            <tr>
+              <td>纸币总金额</td>
+              <td align="right"><span id="billAmount">$0.00</span></td>
+            </tr>
+            <tr>
+              <td>硬币总金额</td>
+              <td align="right"><span id="coinAmount">$0.00</span></td>
+            </tr>
+            <tr>
+              <td><strong>期末总金额</strong></td>
+              <td align="right"><span id="cashTotalAmount">$0.00</span></td>
+            </tr>
+            <tr>
+              <td>期初总金额</td>
+              <td align="right"><span id="cashBeginAmount">$0.00</span></td>
+            </tr>
+            <tr>
+              <td><strong>Cash Balance</strong></td>
+              <td align="right"><span id="cashBalance">$0.00</span></td>
+            </tr>
+            <tr>
+              <td>Cash Print</td>
+              <td align="right"><span id="cashPrint">$0.00</span></td>
+            </tr>
+            <tr>
+              <td><strong>Balance</strong></td>
+              <td align="right"><span id="balanceAmount">$0.00</span></td>
+            </tr>
+            <tr>
+              <td>Debit Card</td>
+              <td align="right"><span id="debitCardTotalAmount">$0.00</span></td>
+            </tr>
+            <tr>
+              <td>Credit Card</td>
+              <td align="right"><span id="creditCardTotalAmount">$0.00</span></td>
+            </tr>
+            <tr>
+              <td><strong>POS Total</strong></td>
+              <td align="right"><span id="posTotalAmount">$0.00</span></td>
+            </tr>
+            <tr>
+              <td>POS Print</td>
+              <td align="right"><span id="posPrintAmount">$0.00</span></td>
+            </tr>
+            <tr>
+              <td><strong>POS Balance</strong></td>
+              <td align="right"><span id="posBalanceAmount">$0.00</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Configuration
+    const BILL_DENOMINATIONS = [100, 50, 20, 10, 5];
+    const COIN_DENOMINATIONS = [2, 1, 0.25, 0.1, 0.05];
+
+    // DOM Elements
+    const weatherContainer = document.getElementById('weather-container');
+
+    // Format currency
+    const fmt = (num) => `$${num.toFixed(2)}`;
+
+    // Update a single amount display
+    function updateAmountDisplay(inputId, amountId, multiplier) {
+      const input = document.getElementById(inputId);
+      const display = document.getElementById(amountId);
+      const qty = parseFloat(input.value) || 0;
+      const amount = qty * multiplier;
+      display.textContent = fmt(amount);
+      return amount;
+    }
+
+    // Branch calculation functions using data attributes
+    function calculateFromEvent(e) {
+      const input = e.target;
+      const calcType = input.dataset.calc;
+      const denom = parseFloat(input.dataset.denom);
+
+      if (calcType === 'bill' || calcType === 'coin') {
+        updateAmountDisplay(input.id, `amount${denom}`, denom);
+      } else {
+        const displayId = input.id.replace('input', 'amount');
+        const display = document.getElementById(displayId);
+        const value = parseFloat(input.value) || 0;
+        display.textContent = fmt(value);
+      }
+
+      updateTotals();
+    }
+
+    // Recalculate all totals
+    function updateTotals() {
+      let billTotal = 0, coinTotal = 0, totalCash = 0;
+
+      // 纸币：累加并更新单个显示
+      BILL_DENOMINATIONS.forEach(denom => {
+        const input = document.getElementById(`input${denom}`);
+        const qty = parseFloat(input.value) || 0;
+        const amount = qty * denom;
+        billTotal += amount;
+        setAmount(`amount${denom}`, amount);
+      });
+
+      // 硬币：累加并更新单个显示
+      COIN_DENOMINATIONS.forEach(denom => {
+        const input = document.getElementById(`input${denom}`);
+        const qty = parseFloat(input.value) || 0;
+        const amount = qty * denom;
+        coinTotal += amount;
+        setAmount(`amount${denom}`, amount);
+      });
+
+      // 汇总
+      setAmount('billAmount', billTotal);
+      setAmount('coinAmount', coinTotal);
+      totalCash = billTotal + coinTotal;
+      setAmount('cashTotalAmount', totalCash);
+
+      // 期初现金
+      const cashBegin = parseFloat(document.getElementById('inputCashBegin').value) || 0;
+      setAmount('amountCashBegin', cashBegin);
+      setAmount('cashBeginAmount', cashBegin);
+
+      // 现金余额 = 期末总金额 - 期初现金
+      const cashBalance = totalCash - cashBegin;
+      setAmount('cashBalance', cashBalance);
+
+      // 现金打印
+      const cashPrint = parseFloat(document.getElementById('inputCashPrint').value) || 0;
+      setAmount('amountCashPrint', cashPrint);
+      setAmount('cashPrint', cashPrint);
+
+      // 现金结余 = 现金余额 - 现金打印
+      const balance = cashBalance - cashPrint;
+      setAmount('balanceAmount', balance);
+
+      // 借记卡
+      const debit = parseFloat(document.getElementById('inputDebitCard').value) || 0;
+      const debitBegin = parseFloat(document.getElementById('inputDebitCardBegin').value) || 0;
+      setAmount('amountDebitCardBegin', debitBegin);
+      setAmount('amountDebitCard', debit);
+      setAmount('debitCardTotalAmount', debit - debitBegin);
+
+      // 信用卡
+      const credit = parseFloat(document.getElementById('inputCreditCard').value) || 0;
+      const creditBegin = parseFloat(document.getElementById('inputCreditCardBegin').value) || 0;
+      setAmount('amountCreditCardBegin', creditBegin);
+      setAmount('amountCreditCard', credit);
+      setAmount('creditCardTotalAmount', credit - creditBegin);
+
+      // POS 打印
+      const posPrint = parseFloat(document.getElementById('inputPosPrint').value) || 0;
+      setAmount('amountPosPrint', posPrint);
+      setAmount('posPrintAmount', posPrint);
+
+      // POS 总额 = (期末借记卡 - 期初借记卡) + (期末信用卡 - 期初信用卡)
+      const posTotal = (debit - debitBegin) + (credit - creditBegin);
+      setAmount('posTotalAmount', posTotal);
+
+      // POS 余额 = POS 总额 - POS 打印
+      const posBalance = posTotal - posPrint;
+      setAmount('posBalanceAmount', posBalance);
+    }
+
+    // Set amount with negative styling
+    function setAmount(elementId, value) {
+      const el = document.getElementById(elementId);
+      el.textContent = fmt(value);
+      if (value < 0) {
+        el.classList.add('negative');
+      } else {
+        el.classList.remove('negative');
+      }
+    }
+
+    // Save data to localStorage
+    function saveData() {
+      const inputs = document.querySelectorAll('input[data-calc]');
+      const data = {};
+      inputs.forEach(input => {
+        data[input.id] = input.value;
+      });
+      localStorage.setItem('dailySettlement', JSON.stringify(data));
+      showToast('数据已保存', 'success');
+    }
+
+    // Load data from localStorage
+    function loadData() {
+      const saved = localStorage.getItem('dailySettlement');
+      if (!saved) {
+        showToast('没有找到保存的数据', 'warning');
+        return;
+      }
+      const data = JSON.parse(saved);
+      Object.keys(data).forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.value = data[id];
+      });
+      attachListeners();
+      updateTotals();
+      showToast('数据已加载', 'success');
+    }
+
+    // Reset form
+    function resetForm() {
+      if (!confirm('确定要清空所有输入吗？此操作不可撤销。')) return;
+      const inputs = document.querySelectorAll('input[type="number"]');
+      inputs.forEach(input => input.value = '0');
+      attachListeners();
+      updateTotals();
+      showToast('表单已重置', 'info');
+    }
+
+    // Print optimized version
+    function printTable() {
+      window.print();
+    }
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.textContent = message;
+      toast.style.cssText = `
+        position: fixed; bottom: 20px; right: 20px;
+        padding: 12px 24px; border-radius: 8px;
+        background: ${type==='success'?'#10b981':type==='warning'?'#f59e0b':'#3b82f6'};
+        color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000; animation: fadeIn 0.3s;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
+
+    // Weather fetch
+    async function loadWeather() {
+      const city = 'Montreal';
+      try {
+        const resp = await fetch(`https://wttr.in/${city}?format=j1`);
+        if (!resp.ok) throw new Error('Weather API unavailable');
+        const data = await resp.json();
+        const current = data.current_condition[0];
+        weatherContainer.innerHTML = `
+          <p><strong>${city}</strong> ${current.weatherDesc[0].value} ${current.temp_C}°C
+          (体感 ${current.FeelsLikeC}°C)，${current.winddir16Point}风 ${current.windspeedKmph}km/h，湿度 ${current.humidity}%</p>
+        `;
+      } catch (e) {
+        weatherContainer.innerHTML = `<p class="error">⚠️ 天气信息加载失败，请稍后再试</p>`;
+      }
+    }
+
+    // Show current date
+    function showDate() {
+      const now = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+      document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', options);
+    }
+
+    // Attach event listeners
+    function attachListeners() {
+      document.querySelectorAll('input[data-calc]').forEach(input => {
+        input.removeEventListener('input', calculateFromEvent);
+        input.addEventListener('input', calculateFromEvent);
+      });
+    }
+
+    // Initialize directly (no DOMContentLoaded needed since script at end)
+    showDate();
+    attachListeners();
+    updateTotals();
+    loadWeather();
+  </script>
+</body>
+</html>
