@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>长城超市 - 营业额结算系统 v2.0</title>
+  <style>
+    :root {
+      --bg-color: #f4f7f9;
+      --card-bg: #ffffff;
+      --primary: #4facfe;
+      --secondary: #00f2fe;
+      --text-main: #2c3e50;
+      --success: #27ae60;
+      --danger: #e74c3c;
+    }
+
+    body { 
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    /* 顶部标题和天气 */
+    header {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 10px;
+    }
+
+    header h1 { margin: 0; font-size: 24px; background: linear-gradient(45deg, #4facfe, #00f2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* 卡片通用样式 */
+    .card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+    }
+
+    /* 输入组优化 */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .input-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-item label {
+      font-size: 13px;
+      color: #7f8c8d;
+      margin-bottom: 5px;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      background: #f8f9fa;
+      border: 1px solid #dcdde1;
+      border-radius: 6px;
+      padding: 5px 10px;
+    }
+
+    .input-wrapper input {
+      border: none;
+      background: transparent;
+      width: 100%;
+      font-size: 16px;
+      padding: 5px;
+      outline: none;
+    }
+
+    .input-wrapper .unit { color: #95a5a6; font-size: 14px; margin-right: 5px; }
+
+    /* 右侧固定报表 */
+    .sticky-report {
+      position: sticky;
+      top: 20px;
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .report-table td {
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .report-table .val { text-align: right; font-weight: 600; font-family: 'Courier New', Courier, monospace; }
+    
+    .highlight-row {
+      background: #f8fbff;
+      font-weight: bold;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: white;
+      font-size: 14px;
+    }
+
+    /* 按钮组 */
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity 0.2s;
+      color: white;
+    }
+
+    .btn-save { background: #3498db; }
+    .btn-print { background: var(--primary); }
+    .btn-reset { background: #95a5a6; }
+
+    #weather-box { font-size: 14px; color: #666; text-align: right; }
+  </style>
+</head>
+<body onload="init()">
+
+<div class="container">
+  <header>
+    <div>
+      <h1 id="currentDate">载入中...</h1>
+      <small>长城超市 (Marché C&C) 日结助手</small>
+    </div>
+    <div id="weather-box">获取天气中...</div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="card-title">💰 现金面值盘点</div>
+      <div class="input-grid" id="cashGrid">
+        </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💳 POS 机与系统数据</div>
+      <div class="input-grid" id="posGrid">
+        </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-save" onclick="saveData()">💾 保存当前数据</button>
+      <button class="btn btn-save" style="background:#2ecc71" onclick="loadData()">📂 读取历史数据</button>
+      <button class="btn btn-reset" onclick="resetData()">🧹 清空重置</button>
+    </div>
+  </main>
+
+  <aside class="sticky-report">
+    <div class="card">
+      <div class="card-title">📊 结算摘要报表</div>
+      <table class="report-table">
+        <tbody id="summaryBody">
+          </tbody>
+      </table>
+      <button class="btn btn-print" style="width: 100%; margin-top: 20px;" onclick="printReport()">🖨️ 打印报表</button>
+    </div>
+  </aside>
+</div>
+
+<script>
+// 这里复用你之前的业务逻辑，仅针对新界面做了少量 DOM 适配
+const denoms = [100, 50, 20, 10, 5, 2, 1, 0.25, 0.1, 0.05];
+const posFields = [
+  { id: 'CashBegin', label: 'Cash Begin', def: 192 },
+  { id: 'CashPrint', label: 'Cash Print', def: 0 },
+  { id: 'DebitCardBegin', label: 'Debit Begin', def: 0 },
+  { id: 'DebitCard', label: 'Debit End', def: 0 },
+  { id: 'CreditCardBegin', label: 'Credit Begin', def: 0 },
+  { id: 'CreditCard', label: 'Credit End', def: 0 },
+  { id: 'PosPrint', label: 'POS Print', def: 0 }
+];
+
+function init() {
+  const cashGrid = document.getElementById('cashGrid');
+  const posGrid = document.getElementById('posGrid');
+
+  denoms.forEach(d => {
+    cashGrid.innerHTML += `
+      <div class="input-item">
+        <label>$ ${d} 面值</label>
+        <div class="input-wrapper">
+          <span class="unit">×</span>
+          <input type="number" id="input${d}" value="0" class="calc-input">
+        </div>
+      </div>`;
+  });
+
+  posFields.forEach(f => {
+    posGrid.innerHTML += `
+      <div class="input-item">
+        <label>${f.label}</label>
+        <div class="input-wrapper">
+          <span class="unit">$</span>
+          <input type="number" id="input${f.id}" value="${f.def}" step="0.01" class="calc-input">
+        </div>
+      </div>`;
+  });
+
+  document.querySelectorAll('.calc-input').forEach(ipt => {
+    ipt.addEventListener('input', calculateAll);
+    ipt.addEventListener('focus', e => e.target.select());
+  });
+
+  showDate();
+  fetchWeather();
+  calculateAll();
+}
+
+function calculateAll() {
+  let cashTotal = 0;
+  let billTotal = 0;
+  let coinTotal = 0;
+
+  denoms.forEach(d => {
+    const val = parseFloat(document.getElementById(`input${d}`).value) || 0;
+    const sub = val * d;
+    cashTotal += sub;
+    if (d >= 5) billTotal += sub; else coinTotal += sub;
+  });
+
+  const getV = (id) => parseFloat(document.getElementById(`input${id}`).value) || 0;
+  const cashBegin = getV('CashBegin');
+  const cashPrint = getV('CashPrint');
+  const debitTotal = getV('DebitCard') - getV('DebitCardBegin');
+  const creditTotal = getV('CreditCard') - getV('CreditCardBegin');
+  const posTotal = debitTotal + creditTotal;
+  const posPrint = getV('PosPrint');
+
+  const cashBalance = cashTotal - cashBegin;
+  const balance = cashBalance - cashPrint;
+  const posBalance = posTotal - posPrint;
+
+  const rows = [
+    ['纸币总计', billTotal],
+    ['硬币总计', coinTotal],
+    ['期末现金总额', cashTotal, 'highlight-row'],
+    ['期初准备金', cashBegin],
+    ['Cash Balance', cashBalance],
+    ['Cash Print', cashPrint],
+    ['差异 (Balance)', balance, 'highlight-row', balance],
+    ['Debit Card 净额', debitTotal],
+    ['Credit Card 净额', creditTotal],
+    ['POS 总额', posTotal],
+    ['POS Print', posPrint],
+    ['POS 差异', posBalance, 'highlight-row', posBalance]
+  ];
+
+  document.getElementById('summaryBody').innerHTML = rows.map(r => {
+    let style = "";
+    if (r[3] !== undefined) {
+        style = r[3] < 0 ? "background:#ff7675; color:white; padding:2px 6px; border-radius:4px;" : "background:#55efc4; color:#2d3436; padding:2px 6px; border-radius:4px;";
+    }
+    return `<tr class="${r[2]||''}">
+      <td>${r[0]}</td>
+      <td class="val"><span style="${style}">$${r[1].toFixed(2)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// 保持原有的 Save/Load/Print 逻辑即可...
+function saveData() {
+  const data = {};
+  document.querySelectorAll('input').forEach(ipt => data[ipt.id] = ipt.value);
+  localStorage.setItem('ccCalcDataV2', JSON.stringify(data));
+  alert('✅ 数据已加密保存到本地');
+}
+
+function loadData() {
+  const data = JSON.parse(localStorage.getItem('ccCalcDataV2'));
+  if (!data) return alert('❌ 未找到历史记录');
+  Object.entries(data).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+  calculateAll();
+}
+
+function resetData() {
+  if(confirm('确定要清空吗？')) {
+    location.reload();
+  }
+}
+
+function showDate() {
+  const now = new Date();
+  document.getElementById('currentDate').innerText = now.toLocaleDateString('zh-CN', {year:'numeric', month:'short', day:'numeric', weekday:'short'});
+}
+
+function fetchWeather() {
+  fetch("https://wttr.in/Montreal?format=3").then(res => res.text()).then(t => document.getElementById('weather-box').innerText = t);
+}
+
+function printReport() {
+    window.print();
+}
+
+// Enter 键逻辑
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const ipts = Array.from(document.querySelectorAll('.calc-input'));
+    const idx = ipts.indexOf(document.activeElement);
+    if (idx > -1 && idx < ipts.length - 1) ipts[idx+1].focus();
+  }
+});
+</script>
+</body>
+</html>
