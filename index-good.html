@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日营业额结算</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 5px;
+    }
+
+    .header .date {
+      font-size: 1rem;
+      color: #8a8aad;
+      font-weight: 300;
+    }
+
+    /* Weather Card */
+    .weather-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .weather-card pre {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      color: #b0b0d0;
+      white-space: pre-wrap;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      transition: box-shadow 0.3s;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 32px rgba(79, 172, 254, 0.1);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #4facfe;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(to bottom, #4facfe, #00f2fe);
+      border-radius: 2px;
+    }
+
+    /* Input Rows */
+    .input-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.2s;
+    }
+
+    .input-row:last-child {
+      border-bottom: none;
+    }
+
+    .input-row:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+    }
+
+    .input-row label {
+      flex: 0 0 130px;
+      font-size: 0.9rem;
+      color: #a0a0c0;
+      font-weight: 400;
+      text-align: right;
+      padding-right: 16px;
+      cursor: pointer;
+    }
+
+    .input-row input[type="number"] {
+      width: 110px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      -moz-appearance: textfield;
+    }
+
+    .input-row input[type="number"]::-webkit-inner-spin-button,
+    .input-row input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .input-row input[type="number"]:focus {
+      border-color: #4facfe;
+      box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.15);
+    }
+
+    .input-row .amount-display {
+      flex: 1;
+      text-align: right;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #c0c0e0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Two-column layout for denominations */
+    .denom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 24px;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 600px) {
+      body {
+        padding: 12px;
+      }
+
+      .container {
+        max-width: 100%;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .header .date {
+        font-size: 0.85rem;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 14px;
+      }
+
+      .card-title {
+        font-size: 1rem;
+        margin-bottom: 12px;
+      }
+
+      .denom-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .input-row {
+        padding: 6px 0;
+      }
+
+      .input-row label {
+        flex: 0 0 90px;
+        font-size: 0.82rem;
+        padding-right: 8px;
+      }
+
+      .input-row input[type="number"] {
+        width: 80px;
+        padding: 8px 10px;
+        font-size: 1rem; /* Prevent iOS zoom on focus */
+      }
+
+      .input-row .amount-display {
+        font-size: 0.85rem;
+      }
+
+      .summary-table th,
+      .summary-table td {
+        padding: 10px 10px;
+        font-size: 0.82rem;
+      }
+
+      .btn-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 20px;
+        font-size: 1rem;
+      }
+
+      .weather-card {
+        padding: 12px 16px;
+        border-radius: 12px;
+      }
+
+      .weather-card pre {
+        font-size: 0.82rem;
+      }
+
+      .toast {
+        left: 16px;
+        right: 16px;
+        bottom: 20px;
+        text-align: center;
+      }
+    }
+
+    /* iPhone SE and very small screens */
+    @media (max-width: 375px) {
+      .input-row label {
+        flex: 0 0 75px;
+        font-size: 0.78rem;
+      }
+
+      .input-row input[type="number"] {
+        width: 70px;
+      }
+
+      .header h1 {
+        font-size: 1.3rem;
+      }
+    }
+
+    /* Safe area for iPhone X+ (notch / home indicator) */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    }
+
+    /* Summary Table */
+    .summary-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .summary-table th,
+    .summary-table td {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .summary-table thead th {
+      background: rgba(79, 172, 254, 0.15);
+      color: #4facfe;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.8rem;
+    }
+
+    .summary-table tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.2s;
+    }
+
+    .summary-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .summary-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .summary-table td:last-child {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+
+    .summary-table .highlight-row td {
+      font-weight: 700;
+      color: #ffffff;
+      background: rgba(79, 172, 254, 0.08);
+    }
+
+    .summary-table .section-divider td {
+      border-top: 2px solid rgba(79, 172, 254, 0.2);
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: #0f0c29;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #c0c0e0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+      transform: translateY(-2px);
+    }
+
+    .btn-print {
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+      color: #1a1a2e;
+    }
+
+    .btn-print:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(161, 140, 209, 0.4);
+    }
+
+    /* Value colors */
+    .negative { color: #ff6b6b !important; }
+    .positive { color: #51cf66 !important; }
+
+    /* SVG Icons inline */
+    .icon {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #fff;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.4s;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast-success {
+      background: linear-gradient(135deg, #51cf66, #20c997);
+    }
+
+    .toast-error {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    }
+
+    .toast-info {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: #0f0c29;
+    }
+
+    /* Fade-in animation */
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header fade-in">
+      <h1>日营业额结算</h1>
+      <div class="date" id="currentDate"></div>
+    </div>
+
+    <!-- Weather -->
+    <div class="weather-card fade-in" id="weather-container">
+      <p style="color: #8a8aad;">Loading weather information...</p>
+    </div>
+
+    <!-- Form -->
+    <form id="calculatorForm">
+      <!-- Cash Begin -->
+      <div class="card fade-in">
+        <div class="card-title">Cash Begin</div>
+        <div class="input-row">
+          <label for="inputCashBegin">期初金额</label>
+          <input type="number" id="inputCashBegin" step="any" value="192">
+          <span class="amount-display" id="amountCashBegin">$192.00</span>
+        </div>
+      </div>
+
+      <!-- Denominations -->
+      <div class="card fade-in">
+        <div class="card-title">现金面额</div>
+        <div class="denom-grid" id="denominationRows"></div>
+      </div>
+
+      <!-- Cash / POS Inputs -->
+      <div class="card fade-in">
+        <div class="card-title">刷卡 & POS</div>
+        <div class="input-row">
+          <label for="inputCashPrint">Cash Print</label>
+          <input type="number" id="inputCashPrint" step="any" value="0">
+          <span class="amount-display" id="amountCashPrint">$0.00</span>
+        </div>
+        <div class="input-row">
+          <label for="inputDebitCardBegin">Debit Begin</label>
+          <input type="number" id="inputDebitCardBegin" step="any" value="0">
+          <span class="amount-display" id="amountDebitCardBegin">$0.00</span>
+        </div>
+        <div class="input-row">
+          <label for="inputDebitCard">Debit End</label>
+          <input type="number" id="inputDebitCard" step="any" value="0">
+          <span class="amount-display" id="amountDebitCard">$0.00</span>
+        </div>
+        <div class="input-row">
+          <label for="inputCreditCardBegin">Credit Begin</label>
+          <input type="number" id="inputCreditCardBegin" step="any" value="0">
+          <span class="amount-display" id="amountCreditCardBegin">$0.00</span>
+        </div>
+        <div class="input-row">
+          <label for="inputCreditCard">Credit End</label>
+          <input type="number" id="inputCreditCard" step="any" value="0">
+          <span class="amount-display" id="amountCreditCard">$0.00</span>
+        </div>
+        <div class="input-row">
+          <label for="inputPosPrint">POS Print</label>
+          <input type="number" id="inputPosPrint" step="any" value="0">
+          <span class="amount-display" id="amountPosPrint">$0.00</span>
+        </div>
+      </div>
+    </form>
+
+    <!-- Action Buttons -->
+    <div class="btn-group fade-in">
+      <button class="btn btn-primary" onclick="saveData()">💾 Save Data</button>
+      <button class="btn btn-secondary" onclick="loadData()">📂 Load Data</button>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="card fade-in">
+      <div class="card-title">结算汇总</div>
+      <table class="summary-table" id="table-to-print">
+        <thead>
+          <tr>
+            <th>金额种类</th>
+            <th>金额值</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>纸币总金额</td>
+            <td><span id="billAmount">$0.00</span></td>
+          </tr>
+          <tr>
+            <td>硬币总金额</td>
+            <td><span id="coinAmount">$0.00</span></td>
+          </tr>
+          <tr class="highlight-row">
+            <td>期末总金额</td>
+            <td><span id="cashTotalAmount">$0.00</span></td>
+          </tr>
+          <tr>
+            <td>期初总金额</td>
+            <td><span id="cashBeginAmount">$192.00</span></td>
+          </tr>
+          <tr class="highlight-row">
+            <td>Cash Balance</td>
+            <td><span id="cashBalance">$0.00</span></td>
+          </tr>
+          <tr>
+            <td>Cash Print</td>
+            <td><span id="cashPrint">$0.00</span></td>
+          </tr>
+          <tr class="highlight-row section-divider">
+            <td>Balance</td>
+            <td><span id="balanceAmount">$0.00</span></td>
+          </tr>
+          <tr class="section-divider">
+            <td>Debit Card</td>
+            <td><span id="debitCardTotalAmount">$0.00</span></td>
+          </tr>
+          <tr>
+            <td>Credit Card</td>
+            <td><span id="creditCardTotalAmount">$0.00</span></td>
+          </tr>
+          <tr class="highlight-row">
+            <td>POS Total</td>
+            <td><span id="posTotalAmount">$0.00</span></td>
+          </tr>
+          <tr>
+            <td>POS Print</td>
+            <td><span id="posPrintAmount">$0.00</span></td>
+          </tr>
+          <tr class="highlight-row">
+            <td>POS Balance</td>
+            <td><span id="posBalanceAmount">$0.00</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Print Button -->
+    <div class="btn-group fade-in">
+      <button class="btn btn-print" onclick="printTable()">🖨️ Print Table</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ==================== Configuration ====================
+    const DENOMINATIONS = [
+      { value: 100,  type: 'bill' },
+      { value: 50,   type: 'bill' },
+      { value: 20,   type: 'bill' },
+      { value: 10,   type: 'bill' },
+      { value: 5,    type: 'bill' },
+      { value: 2,    type: 'coin' },
+      { value: 1,    type: 'coin' },
+      { value: 0.25, type: 'coin' },
+      { value: 0.1,  type: 'coin' },
+      { value: 0.05, type: 'coin' },
+    ];
+
+    const EXTRA_INPUTS = [
+      'CashBegin', 'CashPrint',
+      'DebitCardBegin', 'DebitCard',
+      'CreditCardBegin', 'CreditCard',
+      'PosPrint'
+    ];
+
+    // ==================== Helpers ====================
+    const $ = (id) => document.getElementById(id);
+    const formatMoney = (val) => '$' + val.toFixed(2);
+    const roundCents = (val) => Math.round(val * 100) / 100;
+    const getInputVal = (id) => parseFloat($(id).value) || 0;
+
+    function setColorBySign(element, value) {
+      element.className = value < 0 ? 'negative' : 'positive';
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = $('toast');
+      toast.textContent = message;
+      toast.className = `toast toast-${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ==================== Generate Denomination Rows ====================
+    function buildDenominationRows() {
+      const container = $('denominationRows');
+      const fragment = document.createDocumentFragment();
+
+      DENOMINATIONS.forEach(({ value }) => {
+        const div = document.createElement('div');
+        div.className = 'input-row';
+
+        const label = document.createElement('label');
+        label.htmlFor = `input${value}`;
+        label.textContent = `$ ${value} ×`;
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.id = `input${value}`;
+        input.value = '0';
+        input.step = 'any';
+
+        const span = document.createElement('span');
+        span.className = 'amount-display';
+        span.id = `amount${value}`;
+        span.textContent = '$0.00';
+
+        div.append(label, input, span);
+        fragment.appendChild(div);
+      });
+
+      container.appendChild(fragment);
+    }
+
+    // ==================== Calculation ====================
+    function recalculateAll() {
+      let billTotal = 0;
+      let coinTotal = 0;
+
+      DENOMINATIONS.forEach(({ value, type }) => {
+        const quantity = getInputVal(`input${value}`);
+        const amount = roundCents(quantity * value);
+        $(`amount${value}`).textContent = formatMoney(amount);
+
+        if (type === 'bill') billTotal += amount;
+        else coinTotal += amount;
+      });
+
+      billTotal = roundCents(billTotal);
+      coinTotal = roundCents(coinTotal);
+      const cashTotal = roundCents(billTotal + coinTotal);
+
+      EXTRA_INPUTS.forEach(key => {
+        const val = getInputVal(`input${key}`);
+        $(`amount${key}`).textContent = formatMoney(val);
+      });
+
+      $('billAmount').textContent = formatMoney(billTotal);
+      $('coinAmount').textContent = formatMoney(coinTotal);
+      $('cashTotalAmount').textContent = formatMoney(cashTotal);
+
+      const cashBegin = getInputVal('inputCashBegin');
+      $('cashBeginAmount').textContent = formatMoney(cashBegin);
+
+      const cashPrint = getInputVal('inputCashPrint');
+      $('cashPrint').textContent = formatMoney(cashPrint);
+
+      const cashBalance = roundCents(cashTotal - cashBegin);
+      const cashBalanceEl = $('cashBalance');
+      cashBalanceEl.textContent = formatMoney(cashBalance);
+      setColorBySign(cashBalanceEl, cashBalance);
+
+      const balance = roundCents(cashBalance - cashPrint);
+      const balanceEl = $('balanceAmount');
+      balanceEl.textContent = formatMoney(balance);
+      setColorBySign(balanceEl, balance);
+
+      const debitCardTotal = roundCents(getInputVal('inputDebitCard') - getInputVal('inputDebitCardBegin'));
+      $('debitCardTotalAmount').textContent = formatMoney(debitCardTotal);
+
+      const creditCardTotal = roundCents(getInputVal('inputCreditCard') - getInputVal('inputCreditCardBegin'));
+      $('creditCardTotalAmount').textContent = formatMoney(creditCardTotal);
+
+      const posTotal = roundCents(debitCardTotal + creditCardTotal);
+      $('posTotalAmount').textContent = formatMoney(posTotal);
+
+      const posPrint = getInputVal('inputPosPrint');
+      $('posPrintAmount').textContent = formatMoney(posPrint);
+
+      const posBalance = roundCents(posTotal - posPrint);
+      const posBalanceEl = $('posBalanceAmount');
+      posBalanceEl.textContent = formatMoney(posBalance);
+      setColorBySign(posBalanceEl, posBalance);
+    }
+
+    // ==================== Date Display ====================
+    function showDate() {
+      const today = new Date();
+      const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+      const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日 ${weekdays[today.getDay()]}`;
+      $('currentDate').textContent = dateStr;
+      return dateStr;
+    }
+
+    // ==================== Save / Load ====================
+    function getAllInputIds() {
+      return [
+        ...DENOMINATIONS.map(d => `input${d.value}`),
+        ...EXTRA_INPUTS.map(k => `input${k}`)
+      ];
+    }
+
+    function saveData() {
+      const data = {};
+      getAllInputIds().forEach(id => data[id] = $(id).value);
+      localStorage.setItem('currencyCalculatorData', JSON.stringify(data));
+      showToast('✅ Data saved successfully!', 'success');
+    }
+
+    function loadData() {
+      const raw = localStorage.getItem('currencyCalculatorData');
+      if (!raw) {
+        showToast('⚠️ No saved data found.', 'error');
+        return;
+      }
+      try {
+        const data = JSON.parse(raw);
+        Object.entries(data).forEach(([id, value]) => {
+          const el = $(id);
+          if (el) el.value = value;
+        });
+        recalculateAll();
+        showToast('📂 Data loaded successfully!', 'info');
+      } catch (e) {
+        showToast('❌ Failed to load data.', 'error');
+        console.error(e);
+      }
+    }
+
+    // ==================== Print ====================
+    function printTable() {
+      const dateStr = showDate();
+      const cashBegin = getInputVal('inputCashBegin');
+      const tableContent = $('table-to-print').outerHTML;
+
+      const denomRows = DENOMINATIONS.map(({ value, type }) => {
+        const qty = getInputVal(`input${value}`);
+        const label = (type === 'bill' ? 'Bill' : 'Coin') + ` $ ${value}`;
+        const total = roundCents(qty * value);
+        return `<tr><th style="text-align:left">${label}</th><td>${qty}</td><td style="text-align:right">$ ${total.toFixed(2)}</td></tr>`;
+      }).join('\n');
+
+      const html = `
+        <html>
+        <head>
+          <title>长城超市 Marché C&C</title>
+          <style>
+            body { font-family: Arial, sans-serif; }
+            table { border-collapse: collapse; width: 50%; margin-bottom: 16px; }
+            th, td { border: 1px solid #ccc; padding: 8px; }
+            th { background-color: #f5f5f5; font-weight: bold; text-align: left; }
+            td { text-align: right; }
+            h3 { margin: 16px 0 8px; }
+          </style>
+        </head>
+        <body>
+          <h3>${dateStr} 日营业额结算</h3>
+          <table>
+            <tr><th>Cash Begin</th><td>$ ${cashBegin.toFixed(2)}</td></tr>
+          </table>
+          <table>${denomRows}</table>
+          ${tableContent}
+        </body>
+        </html>`;
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.print();
+    }
+
+    // ==================== Weather ====================
+    function fetchWeather() {
+      fetch('https://wttr.in/Montreal?format=%l:+%c+%t+feels+like+%f\n%0ASunrise:+%S\n+Sunset:+%s\n%0AMoon:+%m\n', {
+        method: 'GET',
+        headers: { 'Accept-Language': 'en-US' }
+      })
+        .then(response => {
+          if (!response.ok) throw new Error(response.statusText);
+          return response.text();
+        })
+        .then(data => {
+          $('weather-container').innerHTML = '<pre>' + data + '</pre>';
+        })
+        .catch(error => {
+          console.error('Error fetching weather:', error);
+          $('weather-container').innerHTML = '<p style="color:#8a8aad">Weather information unavailable.</p>';
+        });
+    }
+
+    // ==================== Init ====================
+    function init() {
+      showDate();
+      buildDenominationRows();
+      $('calculatorForm').addEventListener('input', recalculateAll);
+      fetchWeather();
+    }
+
+    init();
+  </script>
+</body>
+</html>
