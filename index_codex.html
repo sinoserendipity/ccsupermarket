@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>长城超市日营业额结算</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7f2;
+      --panel: #ffffff;
+      --panel-soft: #eef4ea;
+      --ink: #20251d;
+      --muted: #687265;
+      --line: #d9e1d4;
+      --brand: #246b49;
+      --brand-dark: #194d36;
+      --accent: #c2472f;
+      --accent-soft: #fff0eb;
+      --ok: #1c7a46;
+      --warn: #b42318;
+      --shadow: 0 20px 55px rgba(36, 63, 38, 0.12);
+      font-family: Inter, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(135deg, rgba(36, 107, 73, 0.08), transparent 42%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 36px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: var(--brand);
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: 0;
+      box-shadow: 0 12px 25px rgba(36, 107, 73, 0.22);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 2vw, 2.2rem);
+      letter-spacing: 0;
+      line-height: 1.1;
+    }
+
+    .date-line {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn {
+      min-height: 42px;
+      border-radius: 8px;
+      padding: 0 14px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(32, 37, 29, 0.06);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(32, 37, 29, 0.09);
+    }
+
+    .btn.primary {
+      color: #fff;
+      background: var(--brand);
+      border-color: var(--brand);
+    }
+
+    .btn.danger {
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-color: #ffd3c6;
+    }
+
+    .hero {
+      margin-bottom: 18px;
+    }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric,
+    .panel {
+      border: 1px solid rgba(217, 225, 212, 0.88);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      padding: 18px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-bottom: 10px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: clamp(1.35rem, 2.5vw, 2rem);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 370px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(238, 244, 234, 0.72);
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .panel-header p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 20px;
+    }
+
+    .field {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .number-control {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 44px;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .stepper {
+      width: 44px;
+      height: 42px;
+      border: 1px solid #cbd6c5;
+      border-radius: 8px;
+      background: var(--panel-soft);
+      color: var(--brand-dark);
+      font-size: 1.35rem;
+      font-weight: 800;
+      line-height: 1;
+      touch-action: manipulation;
+    }
+
+    .stepper:active {
+      background: #dfeadb;
+      transform: translateY(1px);
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .field input {
+      width: 100%;
+      height: 42px;
+      border: 1px solid #cbd6c5;
+      border-radius: 8px;
+      padding: 0 10px;
+      text-align: right;
+      color: var(--ink);
+      background: #fbfcfa;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(36, 107, 73, 0.13);
+    }
+
+    .field-output {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .field-output strong {
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .section-title {
+      grid-column: 1 / -1;
+      margin: 6px 0 0;
+      color: var(--brand-dark);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .summary-list {
+      padding: 8px 0;
+    }
+
+    .summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .summary-row:last-child {
+      border-bottom: 0;
+    }
+
+    .summary-row span:first-child {
+      color: var(--muted);
+    }
+
+    .summary-row strong,
+    .summary-row span:last-child {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .summary-row.highlight {
+      background: var(--panel-soft);
+    }
+
+    .positive {
+      color: var(--ok);
+    }
+
+    .negative {
+      color: var(--warn);
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 10;
+      max-width: min(360px, calc(100vw - 36px));
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #fff;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 920px) {
+      .topbar,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .summary-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        width: min(100% - 20px, 1180px);
+        padding-top: 14px;
+      }
+
+      .topbar {
+        display: grid;
+      }
+
+      .summary-strip,
+      .input-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      .btn {
+        justify-content: center;
+        padding-inline: 10px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      body {
+        background: var(--bg);
+      }
+
+      .app {
+        width: 100%;
+        padding:
+          max(12px, env(safe-area-inset-top))
+          max(10px, env(safe-area-inset-right))
+          calc(22px + env(safe-area-inset-bottom))
+          max(10px, env(safe-area-inset-left));
+      }
+
+      .topbar {
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .brand {
+        gap: 10px;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        font-size: 0.9rem;
+      }
+
+      h1 {
+        font-size: 1.35rem;
+        line-height: 1.18;
+      }
+
+      .date-line {
+        font-size: 0.9rem;
+      }
+
+      .actions {
+        position: sticky;
+        top: max(8px, env(safe-area-inset-top));
+        z-index: 5;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        padding: 6px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(245, 247, 242, 0.94);
+        backdrop-filter: blur(12px);
+      }
+
+      .btn {
+        min-height: 40px;
+        padding-inline: 6px;
+        font-size: 0.9rem;
+        box-shadow: none;
+      }
+
+      .hero {
+        margin-bottom: 10px;
+      }
+
+      .summary-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .metric {
+        padding: 12px;
+      }
+
+      .metric span {
+        margin-bottom: 8px;
+        font-size: 0.78rem;
+      }
+
+      .metric strong {
+        font-size: 1.2rem;
+      }
+
+      .panel {
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(36, 63, 38, 0.08);
+      }
+
+      .layout {
+        gap: 10px;
+      }
+
+      .panel-header {
+        padding: 14px;
+      }
+
+      .input-grid {
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .field {
+        grid-template-columns: 86px minmax(0, 1fr);
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .number-control {
+        grid-template-columns: 48px minmax(0, 1fr) 48px;
+      }
+
+      .stepper {
+        width: 48px;
+        height: 44px;
+        font-size: 1.45rem;
+      }
+
+      .field label,
+      .field-output {
+        font-size: 0.86rem;
+      }
+
+      .field input {
+        height: 40px;
+        padding-inline: 8px;
+      }
+
+      .section-title {
+        margin-top: 4px;
+        font-size: 0.76rem;
+      }
+
+      .summary-row {
+        padding: 11px 14px;
+        font-size: 0.92rem;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">C&C</div>
+        <div>
+          <h1>长城超市日营业额结算</h1>
+          <p class="date-line" id="currentDate"></p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="saveButton" type="button">保存</button>
+        <button class="btn" id="loadButton" type="button">恢复</button>
+        <button class="btn danger" id="resetButton" type="button">清空</button>
+      </div>
+    </header>
+
+    <section class="hero" aria-label="关键结果">
+      <div class="summary-strip" id="metricStrip"></div>
+    </section>
+
+    <section class="layout">
+      <form class="panel input-panel" id="settlementForm">
+        <div class="panel-header">
+          <div>
+            <h2>输入区</h2>
+            <p>输入张数、枚数和POS读数，结果会自动更新。</p>
+          </div>
+        </div>
+        <div class="input-grid" id="inputGrid"></div>
+      </form>
+
+      <aside class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>结算汇总</h2>
+            <p id="printDate">今日报表</p>
+          </div>
+        </div>
+        <div class="summary-list" id="summaryList"></div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "ccsupermarket-settlement-v2";
+    const money = new Intl.NumberFormat("en-CA", {
+      style: "currency",
+      currency: "CAD"
+    });
+
+    const denominations = [
+      { key: "100", label: "$100", value: 100, type: "纸币" },
+      { key: "50", label: "$50", value: 50, type: "纸币" },
+      { key: "20", label: "$20", value: 20, type: "纸币" },
+      { key: "10", label: "$10", value: 10, type: "纸币" },
+      { key: "5", label: "$5", value: 5, type: "纸币" },
+      { key: "2", label: "$2", value: 2, type: "硬币" },
+      { key: "1", label: "$1", value: 1, type: "硬币" },
+      { key: "025", label: "$0.25", value: 0.25, type: "硬币" },
+      { key: "010", label: "$0.10", value: 0.1, type: "硬币" },
+      { key: "005", label: "$0.05", value: 0.05, type: "硬币" }
+    ];
+
+    const ledgerFields = [
+      { key: "cashBegin", label: "期初现金", defaultValue: 192 },
+      { key: "cashPrint", label: "Cash Print", defaultValue: 0 },
+      { key: "debitBegin", label: "Debit Begin", defaultValue: 0 },
+      { key: "debitEnd", label: "Debit End", defaultValue: 0 },
+      { key: "creditBegin", label: "Credit Begin", defaultValue: 0 },
+      { key: "creditEnd", label: "Credit End", defaultValue: 0 },
+      { key: "posPrint", label: "POS Print", defaultValue: 0 }
+    ];
+
+    const state = {
+      counts: Object.fromEntries(denominations.map((item) => [item.key, 0])),
+      ledger: Object.fromEntries(ledgerFields.map((item) => [item.key, item.defaultValue]))
+    };
+
+    const inputGrid = document.querySelector("#inputGrid");
+    const metricStrip = document.querySelector("#metricStrip");
+    const summaryList = document.querySelector("#summaryList");
+    const toast = document.querySelector("#toast");
+
+    function formatDate(date = new Date()) {
+      const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+      return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${weekdays[date.getDay()]}`;
+    }
+
+    function numberValue(value) {
+      const parsed = Number.parseFloat(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function signedClass(value) {
+      return value < 0 ? "negative" : "positive";
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function buildField({ id, label, value, step = "1", min = "0", output = "$0.00" }) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "field";
+      wrapper.innerHTML = `
+        <label for="${id}">${label}</label>
+        <div class="number-control">
+          <button class="stepper" type="button" data-step-for="${id}" data-direction="-1" aria-label="${label} 减少">−</button>
+          <input id="${id}" type="number" min="${min}" step="${step}" value="${value}" inputmode="decimal">
+          <button class="stepper" type="button" data-step-for="${id}" data-direction="1" aria-label="${label} 增加">+</button>
+        </div>
+        <span class="field-output"><span>小计</span><strong data-output-for="${id}">${output}</strong></span>
+      `;
+      return wrapper;
+    }
+
+    function renderInputs() {
+      inputGrid.innerHTML = "";
+      inputGrid.insertAdjacentHTML("beforeend", '<div class="section-title">现金盘点</div>');
+      denominations.forEach((item) => {
+        inputGrid.appendChild(buildField({
+          id: `count-${item.key}`,
+          label: `${item.type} ${item.label}`,
+          value: state.counts[item.key]
+        }));
+      });
+
+      inputGrid.insertAdjacentHTML("beforeend", '<div class="section-title">系统读数</div>');
+      ledgerFields.forEach((item) => {
+        inputGrid.appendChild(buildField({
+          id: `ledger-${item.key}`,
+          label: item.label,
+          value: state.ledger[item.key],
+          step: "0.01"
+        }));
+      });
+    }
+
+    function getTotals() {
+      const cashLines = denominations.map((item) => ({
+        ...item,
+        count: numberValue(state.counts[item.key]),
+        amount: numberValue(state.counts[item.key]) * item.value
+      }));
+
+      const billAmount = cashLines
+        .filter((item) => item.type === "纸币")
+        .reduce((total, item) => total + item.amount, 0);
+      const coinAmount = cashLines
+        .filter((item) => item.type === "硬币")
+        .reduce((total, item) => total + item.amount, 0);
+      const cashTotal = billAmount + coinAmount;
+      const cashBalance = cashTotal - numberValue(state.ledger.cashBegin);
+      const balance = cashBalance - numberValue(state.ledger.cashPrint);
+      const debitCard = numberValue(state.ledger.debitEnd) - numberValue(state.ledger.debitBegin);
+      const creditCard = numberValue(state.ledger.creditEnd) - numberValue(state.ledger.creditBegin);
+      const posTotal = debitCard + creditCard;
+      const posBalance = posTotal - numberValue(state.ledger.posPrint);
+
+      return {
+        cashLines,
+        billAmount,
+        coinAmount,
+        cashTotal,
+        cashBalance,
+        balance,
+        debitCard,
+        creditCard,
+        posTotal,
+        posBalance
+      };
+    }
+
+    function renderMetrics(totals) {
+      const metrics = [
+        ["现金期末", totals.cashTotal],
+        ["现金差额", totals.balance, signedClass(totals.balance)],
+        ["POS合计", totals.posTotal],
+        ["POS差额", totals.posBalance, signedClass(totals.posBalance)]
+      ];
+
+      metricStrip.innerHTML = metrics.map(([label, value, className = ""]) => `
+        <article class="metric">
+          <span>${label}</span>
+          <strong class="${className}">${money.format(value)}</strong>
+        </article>
+      `).join("");
+    }
+
+    function renderSummary(totals) {
+      const rows = [
+        ["纸币总金额", totals.billAmount],
+        ["硬币总金额", totals.coinAmount],
+        ["期末总金额", totals.cashTotal, true],
+        ["期初总金额", state.ledger.cashBegin],
+        ["Cash Balance", totals.cashBalance, true, signedClass(totals.cashBalance)],
+        ["Cash Print", state.ledger.cashPrint],
+        ["Balance", totals.balance, true, signedClass(totals.balance)],
+        ["Debit Card", totals.debitCard],
+        ["Credit Card", totals.creditCard],
+        ["POS Total", totals.posTotal, true],
+        ["POS Print", state.ledger.posPrint],
+        ["POS Balance", totals.posBalance, true, signedClass(totals.posBalance)]
+      ];
+
+      summaryList.innerHTML = rows.map(([label, value, highlight, className = ""]) => `
+        <div class="summary-row ${highlight ? "highlight" : ""}">
+          <span>${label}</span>
+          <strong class="${className}">${money.format(numberValue(value))}</strong>
+        </div>
+      `).join("");
+    }
+
+    function updateOutputs(totals) {
+      denominations.forEach((item) => {
+        const output = document.querySelector(`[data-output-for="count-${item.key}"]`);
+        if (output) output.textContent = money.format(numberValue(state.counts[item.key]) * item.value);
+      });
+
+      ledgerFields.forEach((item) => {
+        const output = document.querySelector(`[data-output-for="ledger-${item.key}"]`);
+        if (output) output.textContent = money.format(numberValue(state.ledger[item.key]));
+      });
+
+      renderMetrics(totals);
+      renderSummary(totals);
+    }
+
+    function update() {
+      updateOutputs(getTotals());
+    }
+
+    function collectFormValues() {
+      denominations.forEach((item) => {
+        state.counts[item.key] = numberValue(document.querySelector(`#count-${item.key}`).value);
+      });
+      ledgerFields.forEach((item) => {
+        state.ledger[item.key] = numberValue(document.querySelector(`#ledger-${item.key}`).value);
+      });
+      update();
+    }
+
+    function applyState(nextState) {
+      Object.assign(state.counts, nextState.counts || {});
+      Object.assign(state.ledger, nextState.ledger || {});
+      denominations.forEach((item) => {
+        document.querySelector(`#count-${item.key}`).value = numberValue(state.counts[item.key]);
+      });
+      ledgerFields.forEach((item) => {
+        document.querySelector(`#ledger-${item.key}`).value = numberValue(state.ledger[item.key]);
+      });
+      update();
+    }
+
+    function saveData() {
+      collectFormValues();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      showToast("已经保存本次输入。");
+    }
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) {
+        showToast("还没有保存过数据。");
+        return;
+      }
+
+      try {
+        applyState(JSON.parse(saved));
+        showToast("已恢复上次保存的数据。");
+      } catch {
+        showToast("保存的数据无法读取。");
+      }
+    }
+
+    function resetData() {
+      applyState({
+        counts: Object.fromEntries(denominations.map((item) => [item.key, 0])),
+        ledger: Object.fromEntries(ledgerFields.map((item) => [item.key, item.defaultValue]))
+      });
+      showToast("输入区已清空。");
+    }
+
+    document.querySelector("#currentDate").textContent = formatDate();
+    document.querySelector("#printDate").textContent = formatDate();
+    renderInputs();
+    update();
+
+    document.querySelector("#settlementForm").addEventListener("input", collectFormValues);
+    inputGrid.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-step-for]");
+      if (!button) return;
+
+      const input = document.querySelector(`#${button.dataset.stepFor}`);
+      const direction = Number(button.dataset.direction);
+      const step = numberValue(input.step || 1);
+      const min = numberValue(input.min || 0);
+      const nextValue = Math.max(min, numberValue(input.value) + direction * step);
+
+      input.value = step < 1 ? nextValue.toFixed(2) : String(nextValue);
+      collectFormValues();
+    });
+    document.querySelector("#saveButton").addEventListener("click", saveData);
+    document.querySelector("#loadButton").addEventListener("click", loadData);
+    document.querySelector("#resetButton").addEventListener("click", resetData);
+  </script>
+</body>
+</html>
