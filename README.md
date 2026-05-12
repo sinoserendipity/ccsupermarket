@@ -1,8 +1,122 @@
-## 超市日结算简单HTML计算器
+# 长城超市日营业额结算
 
-- Cash Balance = 期末现金 - 期初现金
-- Balance = Cash Balance - Cash Print
-- Debit Card = Debit End - Debit Begin
-- Credit Card = Credit End - Credit Begin
-- POS Total = Debit Card + Credit Card
-- POS Balance = POS Total - POS Print
+一个专为长城超市（C&C Supermarket）设计的每日营业额结算工具，无需安装、无需后端，直接在浏览器中运行，支持手机和桌面端。
+
+---
+
+## 功能概览
+
+- **现金盘点**：逐面额输入纸币张数和硬币枚数，自动计算各面额小计及现金合计
+- **系统读数**：录入 POS 机打印单上的期初/期末读数，自动计算刷卡营业额及差额
+- **实时汇总**：所有结果随输入即时更新，无需手动提交
+- **数据保存 / 恢复**：通过浏览器本地存储（localStorage）保存当日数据，随时恢复
+- **一键清空**：重置所有输入至初始状态
+- **响应式布局**：针对 iPhone 等移动设备优化，操作紧凑流畅
+
+---
+
+## 使用方法
+
+1. 用浏览器打开 `index.html`（无需服务器，双击即可）
+2. 在 **现金盘点** 区域输入各面额的张数或枚数
+3. 在 **系统读数** 区域填写 POS 打印单数据
+4. 右侧 **结算汇总** 栏及顶部 4 个指标卡片实时显示结果
+5. 点击 **保存** 记录本次数据；点击 **恢复** 读取上次保存；点击 **清空** 重新开始
+
+---
+
+## 输入字段说明
+
+### 现金盘点（纸币 & 硬币）
+
+| 字段 | 说明 |
+|------|------|
+| 纸币 $100 | $100 纸币张数 |
+| 纸币 $50  | $50 纸币张数 |
+| 纸币 $20  | $20 纸币张数 |
+| 纸币 $10  | $10 纸币张数 |
+| 纸币 $5   | $5 纸币张数 |
+| 硬币 $2   | $2 硬币枚数 |
+| 硬币 $1   | $1 硬币枚数 |
+| 硬币 $0.25 | 25¢ 硬币枚数 |
+| 硬币 $0.10 | 10¢ 硬币枚数 |
+| 硬币 $0.05 | 5¢ 硬币枚数 |
+
+### 系统读数（POS 打印单）
+
+| 字段 | 说明 |
+|------|------|
+| 期初现金（Cash Begin） | 备用金，默认 $192.00 |
+| Cash Print | 收银系统打印的当日现金销售额 |
+| Debit Begin | 借记卡读数（营业开始） |
+| Debit End   | 借记卡读数（营业结束） |
+| Credit Begin | 信用卡读数（营业开始） |
+| Credit End   | 信用卡读数（营业结束） |
+| POS Print   | POS 机打印的当日刷卡合计 |
+
+---
+
+## 计算公式
+
+### 现金部分
+
+```
+各面额小计     = 面额单价 × 张数（或枚数）
+
+纸币总金额     = Σ 所有纸币面额小计
+硬币总金额     = Σ 所有硬币面额小计
+期末总金额     = 纸币总金额 + 硬币总金额
+
+Cash Balance  = 期末总金额 − 期初现金
+Balance       = Cash Balance − Cash Print
+```
+
+> **Balance** 为正表示现金盈余，为负表示现金短少。
+
+### POS 刷卡部分
+
+```
+Debit Card    = Debit End − Debit Begin
+Credit Card   = Credit End − Credit Begin
+POS Total     = Debit Card + Credit Card
+
+POS Balance   = POS Total − POS Print
+```
+
+> **POS Balance** 为正表示刷卡盈余，为负表示刷卡短少。
+
+### 顶部指标卡
+
+| 指标 | 公式 |
+|------|------|
+| 现金期末 | 期末总金额 |
+| 现金差额 | Balance（= 期末总金额 − 期初现金 − Cash Print） |
+| POS 合计 | POS Total |
+| POS 差额 | POS Balance（= POS Total − POS Print） |
+
+---
+
+## 技术说明
+
+- 纯原生 HTML + CSS + JavaScript，零依赖，无需构建工具
+- 数据通过 `localStorage` 持久化，键名为 `ccsupermarket-settlement-v2`
+- 货币格式化采用 `Intl.NumberFormat`（加拿大元 CAD）
+- 响应式断点：`920px`（平板）、`640px`（小屏）、`430px`（iPhone）
+
+---
+
+## 文件结构
+
+```
+ccsupermarket/
+├── index.html        # 主程序（当前优化版）
+├── index_backup.html   # 原始老版本备用版本
+├── index_backup_new.html  # 新版本修改优化前备份
+└── README.md         # 本文档
+```
+
+---
+
+## License
+
+本项目为内部使用工具，未指定开源协议。
