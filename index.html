@@ -437,6 +437,37 @@
     .positive { color: var(--ok); }
     .negative { color: var(--warn); }
 
+
+    /* ── FOOTER ── */
+    .app-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 32px;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-family: var(--mono);
+      letter-spacing: 0.03em;
+    }
+
+    .footer-name { color: var(--muted); font-weight: 600; }
+    .footer-version {
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--accent2);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .footer-sep { opacity: 0.35; }
+    .footer-author { color: var(--muted); }
+
     /* ── TOAST ── */
     .toast {
       position: fixed;
@@ -602,6 +633,14 @@
       </aside>
     </section>
   </main>
+
+  <footer class="app-footer">
+    <span class="footer-name">长城超市日营业额结算</span>
+    <span class="footer-sep">·</span>
+    <span class="footer-version">v2.0.0</span>
+    <span class="footer-sep">·</span>
+    <span class="footer-author">© 2026 Alan Wang</span>
+  </footer>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
