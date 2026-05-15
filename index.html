@@ -434,6 +434,7 @@
       font-size: 0.85rem;
     }
 
+    .zero     { color: var(--text); }
     .positive { color: var(--ok); }
     .negative { color: var(--warn); }
 
@@ -637,7 +638,7 @@
   <footer class="app-footer">
     <span class="footer-name">长城超市日营业额结算</span>
     <span class="footer-sep">·</span>
-    <span class="footer-version">v2.0.1</span>
+    <span class="footer-version">v2.0.3</span>
     <span class="footer-sep">·</span>
     <span class="footer-author">© 2026 Alan Wang</span>
   </footer>
@@ -691,7 +692,7 @@
       return Number.isFinite(parsed) ? parsed : 0;
     }
 
-    function signedClass(value) { return value < 0 ? "negative" : "positive"; }
+    function signedClass(value) { return value < 0 ? "negative" : value > 0 ? "positive" : "zero"; }
 
     function showToast(message) {
       toast.textContent = message;
@@ -764,10 +765,10 @@
 
     function renderMetrics(totals) {
       const metrics = [
-        ["现金期末", totals.cashTotal],
-        ["现金差额", totals.balance,    signedClass(totals.balance)],
-        ["POS 合计", totals.posTotal],
-        ["POS 差额", totals.posBalance, signedClass(totals.posBalance)]
+        ["现金期末", totals.cashTotal,   signedClass(totals.cashTotal)],
+        ["现金差额", totals.balance,     signedClass(totals.balance)],
+        ["POS 合计", totals.posTotal,    signedClass(totals.posTotal)],
+        ["POS 差额", totals.posBalance,  signedClass(totals.posBalance)]
       ];
       metricStrip.innerHTML = metrics.map(([label, value, cls = ""]) => `
         <article class="metric">
@@ -779,18 +780,18 @@
 
     function renderSummary(totals) {
       const rows = [
-        ["纸币总金额",    totals.billAmount],
-        ["硬币总金额",    totals.coinAmount],
-        ["期末总金额",    totals.cashTotal,    true],
-        ["期初总金额",    state.ledger.cashBegin],
-        ["Cash Balance", totals.cashBalance,   true, signedClass(totals.cashBalance)],
-        ["Cash Print",   state.ledger.cashPrint],
-        ["Balance",      totals.balance,       true, signedClass(totals.balance)],
-        ["Debit Card",   totals.debitCard],
-        ["Credit Card",  totals.creditCard],
-        ["POS Total",    totals.posTotal,      true],
-        ["POS Print",    state.ledger.posPrint],
-        ["POS Balance",  totals.posBalance,    true, signedClass(totals.posBalance)]
+        ["纸币总金额",    totals.billAmount,                false, signedClass(totals.billAmount)],
+        ["硬币总金额",    totals.coinAmount,                false, signedClass(totals.coinAmount)],
+        ["期末总金额",    totals.cashTotal,                 true,  signedClass(totals.cashTotal)],
+        ["期初总金额",    state.ledger.cashBegin,           false, signedClass(state.ledger.cashBegin)],
+        ["Cash Balance", totals.cashBalance,               true,  signedClass(totals.cashBalance)],
+        ["Cash Print",   state.ledger.cashPrint,           false, signedClass(state.ledger.cashPrint)],
+        ["Balance",      totals.balance,                   true,  signedClass(totals.balance)],
+        ["Debit Card",   totals.debitCard,                 false, signedClass(totals.debitCard)],
+        ["Credit Card",  totals.creditCard,                false, signedClass(totals.creditCard)],
+        ["POS Total",    totals.posTotal,                  true,  signedClass(totals.posTotal)],
+        ["POS Print",    state.ledger.posPrint,            false, signedClass(state.ledger.posPrint)],
+        ["POS Balance",  totals.posBalance,                true,  signedClass(totals.posBalance)]
       ];
       summaryList.innerHTML = rows.map(([label, value, highlight, cls = ""]) => `
         <div class="summary-row ${highlight ? "highlight" : ""}">
