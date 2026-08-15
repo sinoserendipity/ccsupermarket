@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>长城超市日营业额结算</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --surface2: #21262d;
+      --surface3: #30363d;
+      --border:   #30363d;
+      --accent:   #f78166;
+      --accent2:  #79c0ff;
+      --accent3:  #56d364;
+      --accent4:  #ffa657;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --danger:   #f85149;
+      --ok:       #56d364;
+      --warn:     #f85149;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Syne', 'Microsoft YaHei', sans-serif;
+      --grid-line: rgba(121,192,255,0.03);
+      --topbar-bg: rgba(13,17,23,0.88);
+    }
+
+    /* ── LIGHT MODE ── */
+    :root.light {
+      --bg:       #f6f8fa;
+      --surface:  #ffffff;
+      --surface2: #f0f3f6;
+      --surface3: #d0d7de;
+      --border:   #d0d7de;
+      --accent:   #cf4620;
+      --accent2:  #0969da;
+      --accent3:  #1a7f37;
+      --accent4:  #bf6c00;
+      --text:     #1f2328;
+      --muted:    #656d76;
+      --danger:   #d1242f;
+      --ok:       #1a7f37;
+      --warn:     #d1242f;
+      --grid-line: rgba(9,105,218,0.04);
+      --topbar-bg: rgba(246,248,250,0.92);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    button, input { font: inherit; }
+    button { border: 0; cursor: pointer; }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 18px 0 40px;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky;
+      top: 8px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 12px 18px;
+      background: var(--topbar-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar-row1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .topbar-row2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-row2 .btn {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+
+    .autosave-hint {
+      align-self: flex-end;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      padding: 2px 0;
+      opacity: 0.9;
+      transition: color 0.2s ease;
+    }
+    .autosave-hint.flash { color: var(--ok); }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: -0.02em;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: clamp(1.1rem, 2vw, 1.55rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .date-line {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-family: var(--mono);
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .btn.primary:hover { filter: brightness(1.12); }
+
+    .btn:not(.primary):not(.danger) {
+      background: var(--surface2);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn:not(.primary):not(.danger):hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    .btn.danger {
+      background: rgba(248,81,73,0.1);
+      color: var(--danger);
+      border-color: rgba(248,81,73,0.3);
+    }
+    .btn.danger:hover { background: var(--danger); color: #fff; }
+
+    .btn.danger.armed {
+      background: var(--danger);
+      color: #fff;
+      animation: pulse 0.9s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(248,81,73,0.5); }
+      50%      { box-shadow: 0 0 0 6px rgba(248,81,73,0); }
+    }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    }
+
+    .layout > aside { position: sticky; top: 80px; }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .panel-header h2 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .panel-header p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-family: var(--mono);
+    }
+
+    .input-panel .panel-header p { display: none; }
+
+    /* ── RESULT HERO ── */
+    .result-hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+
+    .result-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .result-value {
+      font-family: var(--mono);
+      font-size: clamp(1.15rem, 2vw, 1.4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .result-value.ok    { color: var(--ok); }
+    .result-value.over  { color: var(--accent4); }
+    .result-value.short { color: var(--danger); }
+
+    .result-badge {
+      align-self: flex-start;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+    .result-badge.ok {
+      color: var(--ok);
+      border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+      background: color-mix(in srgb, var(--ok) 12%, transparent);
+    }
+    .result-badge.over {
+      color: var(--accent4);
+      border-color: color-mix(in srgb, var(--accent4) 40%, transparent);
+      background: color-mix(in srgb, var(--accent4) 12%, transparent);
+    }
+    .result-badge.short {
+      color: var(--danger);
+      border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+      background: color-mix(in srgb, var(--danger) 12%, transparent);
+    }
+
+    /* ── INPUT GRID ── */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      padding: 14px;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      grid-column: 1 / -1;
+      margin: 8px 0 2px;
+      color: var(--accent2);
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    /* ── FIELD ROW ── */
+    .field {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color 0.15s;
+    }
+    .field:hover { border-color: var(--surface3); }
+    .field:focus-within {
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 2px rgba(121,192,255,0.08);
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex: 1 1 auto;
+      min-width: 72px;
+    }
+
+    .field-output {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      flex: 0 0 auto;
+      width: 110px;
+      white-space: nowrap;
+      margin-left: 8px;
+    }
+
+    .field-output span {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field-output strong {
+      color: var(--accent4);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* ── NUMBER CONTROL ── */
+    .number-control {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .stepper {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--surface3);
+      border-radius: 6px;
+      background: var(--surface3);
+      color: var(--muted);
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1;
+      touch-action: manipulation;
+      flex-shrink: 0;
+      transition: all 0.12s;
+    }
+    .stepper:hover { background: var(--accent2); border-color: var(--accent2); color: var(--bg); }
+    .stepper:active { transform: scale(0.92); }
+
+    .field input {
+      width: 60px;
+      height: 30px;
+      background: var(--bg);
+      border: 1px solid var(--surface3);
+      border-radius: 6px;
+      padding: 0 6px;
+      text-align: right;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input:focus {
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 3px rgba(121,192,255,0.12);
+    }
+    .field input::-webkit-outer-spin-button,
+    .field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .field input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+    .field > .direct-input {
+      width: 120px;
+      height: 30px;
+      flex: 0 0 auto;
+    }
+
+    /* ── SUMMARY LIST ── */
+    .summary-list { padding: 4px 0; }
+
+    .summary-group-title {
+      padding: 10px 18px 4px;
+      color: var(--accent2);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 18px;
+      border-bottom: 1px solid rgba(48,54,61,0.5);
+    }
+    .summary-row:last-child { border-bottom: none; }
+
+    .summary-row span:first-child {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .summary-row strong {
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .summary-row.highlight {
+      background: rgba(121,192,255,0.05);
+    }
+    .summary-row.highlight span:first-child {
+      color: var(--text);
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .zero     { color: var(--text); }
+    .positive { color: var(--ok); }
+    .negative { color: var(--warn); }
+
+    /* ── MOBILE SUMMARY BAR ── */
+    .mobile-summary {
+      display: none;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 300;
+      background: var(--topbar-bg);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border);
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      gap: 10px;
+    }
+
+    .ms-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .ms-item span {
+      font-size: 0.66rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+    .ms-item strong {
+      font-family: var(--mono);
+      font-size: 1.02rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .ms-item strong.ok    { color: var(--ok); }
+    .ms-item strong.over  { color: var(--accent4); }
+    .ms-item strong.short { color: var(--danger); }
+
+    /* ── FOOTER ── */
+    .app-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 32px;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-family: var(--mono);
+      letter-spacing: 0.03em;
+    }
+
+    .footer-name { color: var(--muted); font-weight: 600; }
+    .footer-version {
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--accent2);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .footer-sep { opacity: 0.35; }
+    .footer-author { color: var(--muted); }
+
+    /* ── PRINT HEADER (print only) ── */
+    .print-header { display: none; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 9999;
+      max-width: min(340px, calc(100vw - 40px));
+      padding: 11px 16px;
+      background: var(--surface2);
+      border: 1px solid rgba(86,211,100,0.35);
+      border-radius: 10px;
+      color: var(--accent3);
+      font-size: 0.84rem;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      opacity: 0;
+      transform: translateY(16px);
+      pointer-events: none;
+      transition: all 0.28s cubic-bezier(.34,1.56,.64,1);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── THEME TOGGLE ── */
+    .theme-toggle {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      min-width: 38px;
+      padding: 0 10px;
+      font-size: 1rem;
+      transition: all 0.15s, transform 0.2s ease;
+    }
+    .theme-toggle:hover {
+      border-color: var(--accent2);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; }
+      .topbar { align-items: stretch; }
+      .mobile-summary { display: flex; }
+      .app { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+    }
+
+    @media (max-width: 640px) {
+      .app { width: min(100% - 16px, 1200px); padding-top: 12px; }
+      .topbar { gap: 8px; }
+      .input-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 430px) {
+      .app {
+        width: 100%;
+        padding:
+          max(10px, env(safe-area-inset-top))
+          max(10px, env(safe-area-inset-right))
+          calc(110px + env(safe-area-inset-bottom))
+          max(10px, env(safe-area-inset-left));
+      }
+
+      .topbar {
+        top: max(6px, env(safe-area-inset-top));
+        margin-bottom: 12px;
+        padding: 10px 12px;
+        gap: 10px;
+      }
+
+      h1 { font-size: 1.2rem; }
+      .date-line { font-size: 0.76rem; }
+
+      .btn { min-height: 44px; padding-inline: 6px; font-size: 0.86rem; box-shadow: none; }
+
+      .layout { gap: 10px; }
+      .layout > aside { position: static; }
+      .panel-header { padding: 11px 13px; }
+      .input-grid { gap: 5px; padding: 10px; }
+
+      .field { gap: 5px; padding: 6px 8px; }
+      .field label { font-size: 0.84rem; min-width: 60px; }
+      .field-output { width: 96px; flex: 0 0 auto; justify-content: flex-end; }
+      .field-output strong { font-size: 0.82rem; }
+
+      .stepper { width: 32px; height: 32px; font-size: 1.1rem; }
+      .field input { width: 54px; height: 32px; font-size: 0.84rem; }
+      .field > .direct-input { width: 108px; height: 32px; }
+
+      .section-title { font-size: 0.62rem; }
+      .summary-row { padding: 9px 13px; }
+      .result-hero { padding: 10px; gap: 8px; }
+      .result-card { padding: 11px; }
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      body::before { display: none; }
+      body { background: #fff; color: #000; }
+      .topbar, .input-panel, .app-footer, .toast, .mobile-summary { display: none !important; }
+      .print-header {
+        display: block;
+        margin-bottom: 18px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 12px;
+      }
+      .print-header h1 { font-size: 1.3rem; margin: 0; }
+      .print-header p { font-family: var(--mono); font-size: 0.8rem; color: #555; margin: 4px 0 0; }
+      .app { width: 100%; padding: 0; }
+      .layout { grid-template-columns: 1fr; gap: 0; }
+      .layout > aside { position: static; }
+      .panel { border: 1px solid #ccc; box-shadow: none; border-radius: 0; }
+      .panel-header { background: #f5f5f5; border-color: #ccc; }
+      .result-hero { border-color: #ccc; }
+      .result-card { background: #f9f9f9; border-color: #ccc; }
+      .summary-row, .summary-group-title { border-color: #e5e5e5; }
+      .summary-row.highlight { background: #f5f5f5; }
+    }
+  </style>
+</head>
+<body>
+  <div class="print-header">
+    <h1>长城超市日营业额结算</h1>
+    <p id="printReportDate"></p>
+  </div>
+
+  <main class="app">
+    <header class="topbar">
+      <div class="topbar-row1">
+        <div class="brand">
+          <div class="brand-mark">C&amp;C</div>
+          <div>
+            <h1>长城超市日营业额结算</h1>
+            <p class="date-line" id="currentDate"></p>
+          </div>
+        </div>
+        <button class="btn theme-toggle" id="themeButton" type="button" aria-label="切换主题">🌙</button>
+      </div>
+      <div class="topbar-row2">
+        <button class="btn primary" id="saveButton" type="button">💾 保存</button>
+        <button class="btn" id="loadButton" type="button">↩ 恢复</button>
+        <button class="btn" id="printButton" type="button">🖨 打印</button>
+        <button class="btn danger" id="resetButton" type="button">✕ 清空</button>
+      </div>
+      <span class="autosave-hint" id="autosaveHint">⚡ 自动保存已开启</span>
+    </header>
+
+    <section class="layout">
+      <form class="panel input-panel" id="settlementForm">
+        <div class="panel-header">
+          <div>
+            <h2>输入区</h2>
+            <p>输入张数、枚数和POS读数，结果实时更新</p>
+          </div>
+        </div>
+        <div class="input-grid" id="inputGrid"></div>
+      </form>
+
+      <aside class="panel summary-panel">
+        <div class="panel-header">
+          <div>
+            <h2>结算汇总</h2>
+            <p id="printDate">今日报表</p>
+          </div>
+        </div>
+
+        <div class="result-hero">
+          <div class="result-card">
+            <div class="result-label">现金差额</div>
+            <div class="result-value ok" id="balanceValue">$0.00</div>
+            <div class="result-badge ok" id="balanceBadge">平账</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">POS 差额</div>
+            <div class="result-value ok" id="posBalanceValue">$0.00</div>
+            <div class="result-badge ok" id="posBalanceBadge">平账</div>
+          </div>
+        </div>
+
+        <div class="summary-list" id="summaryList"></div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span class="footer-name">长城超市日营业额结算</span>
+    <span class="footer-sep">·</span>
+    <span class="footer-version">v2.3.0</span>
+    <span class="footer-sep">·</span>
+    <span class="footer-author">© 2026 Alan Wang</span>
+  </footer>
+
+  <div class="mobile-summary" id="mobileSummary">
+    <div class="ms-item">
+      <span>现金差额</span>
+      <strong id="mBalance" class="ok">$0.00</strong>
+    </div>
+    <div class="ms-item">
+      <span>POS 差额</span>
+      <strong id="mPosBalance" class="ok">$0.00</strong>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "ccsupermarket-settlement-v2";
+    const DRAFT_KEY = STORAGE_KEY + ":draft";
+    const money = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });
+
+    const denominations = [
+      { key: "100",  label: "$100",   value: 100,  type: "纸币" },
+      { key: "50",   label: "$50",    value: 50,   type: "纸币" },
+      { key: "20",   label: "$20",    value: 20,   type: "纸币" },
+      { key: "10",   label: "$10",    value: 10,   type: "纸币" },
+      { key: "5",    label: "$5",     value: 5,    type: "纸币" },
+      { key: "2",    label: "$2",     value: 2,    type: "硬币" },
+      { key: "1",    label: "$1",     value: 1,    type: "硬币" },
+      { key: "025",  label: "$0.25",  value: 0.25, type: "硬币" },
+      { key: "010",  label: "$0.10",  value: 0.1,  type: "硬币" },
+      { key: "005",  label: "$0.05",  value: 0.05, type: "硬币" }
+    ];
+
+    const ledgerFields = [
+      { key: "cashBegin",   label: "期初现金",     defaultValue: 192 },
+      { key: "cashPrint",   label: "Cash Print",   defaultValue: 0 },
+      { key: "debitBegin",  label: "Debit Begin",  defaultValue: 0 },
+      { key: "debitEnd",    label: "Debit End",    defaultValue: 0 },
+      { key: "creditBegin", label: "Credit Begin", defaultValue: 0 },
+      { key: "creditEnd",   label: "Credit End",   defaultValue: 0 },
+      { key: "posPrint",    label: "POS Print",    defaultValue: 0 }
+    ];
+
+    const state = {
+      counts: Object.fromEntries(denominations.map(i => [i.key, 0])),
+      ledger: Object.fromEntries(ledgerFields.map(i => [i.key, i.defaultValue]))
+    };
+
+    const inputGrid   = document.querySelector("#inputGrid");
+    const summaryList = document.querySelector("#summaryList");
+    const toast       = document.querySelector("#toast");
+
+    const balanceValueEl     = document.querySelector("#balanceValue");
+    const balanceBadgeEl     = document.querySelector("#balanceBadge");
+    const posBalanceValueEl  = document.querySelector("#posBalanceValue");
+    const posBalanceBadgeEl  = document.querySelector("#posBalanceBadge");
+    const mBalanceEl         = document.querySelector("#mBalance");
+    const mPosBalanceEl      = document.querySelector("#mPosBalance");
+    const autosaveHint       = document.querySelector("#autosaveHint");
+
+    function formatDate(date = new Date()) {
+      const weekdays = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+      return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${weekdays[date.getDay()]}`;
+    }
+
+    function numberValue(value) {
+      const parsed = Number.parseFloat(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function signedClass(value) { return value < 0 ? "negative" : value > 0 ? "positive" : "zero"; }
+
+    function balanceStatus(value) {
+      const v = numberValue(value);
+      if (Math.abs(v) < 0.005) return { label: "平账", cls: "ok" };
+      return v > 0 ? { label: "多出", cls: "over" } : { label: "短少", cls: "short" };
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function buildField({ id, label, value, step = "1", min = "0", output = "$0.00", stepper = true }) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "field";
+      wrapper.innerHTML = `
+        <label for="${id}">${label}</label>
+        ${stepper ? `
+          <div class="number-control">
+            <button class="stepper" type="button" data-step-for="${id}" data-direction="-1" aria-label="${label} 减少">−</button>
+            <input id="${id}" type="number" min="${min}" step="${step}" value="${value}" inputmode="decimal">
+            <button class="stepper" type="button" data-step-for="${id}" data-direction="1" aria-label="${label} 增加">+</button>
+          </div>
+        ` : `
+          <input id="${id}" class="direct-input" type="number" min="${min}" step="${step}" value="${value}" inputmode="decimal">
+        `}
+        <span class="field-output">
+          <span>小计</span>
+          <strong data-output-for="${id}">${output}</strong>
+        </span>
+      `;
+      return wrapper;
+    }
+
+    function renderInputs() {
+      inputGrid.innerHTML = "";
+      inputGrid.insertAdjacentHTML("beforeend", '<div class="section-title">现金盘点</div>');
+      denominations.forEach(item => {
+        inputGrid.appendChild(buildField({
+          id: `count-${item.key}`,
+          label: `${item.type} ${item.label}`,
+          value: state.counts[item.key]
+        }));
+      });
+      inputGrid.insertAdjacentHTML("beforeend", '<div class="section-title">系统读数</div>');
+      ledgerFields.forEach(item => {
+        inputGrid.appendChild(buildField({
+          id: `ledger-${item.key}`,
+          label: item.label,
+          value: state.ledger[item.key],
+          step: "0.01",
+          stepper: false
+        }));
+      });
+    }
+
+    function getTotals() {
+      const cashLines = denominations.map(item => ({
+        ...item,
+        count: numberValue(state.counts[item.key]),
+        amount: numberValue(state.counts[item.key]) * item.value
+      }));
+      const billAmount  = cashLines.filter(i => i.type === "纸币").reduce((t,i) => t + i.amount, 0);
+      const coinAmount  = cashLines.filter(i => i.type === "硬币").reduce((t,i) => t + i.amount, 0);
+      const cashTotal   = billAmount + coinAmount;
+      const cashBalance = cashTotal - numberValue(state.ledger.cashBegin);
+      const balance     = cashBalance - numberValue(state.ledger.cashPrint);
+      const debitCard   = numberValue(state.ledger.debitEnd)  - numberValue(state.ledger.debitBegin);
+      const creditCard  = numberValue(state.ledger.creditEnd) - numberValue(state.ledger.creditBegin);
+      const posTotal    = debitCard + creditCard;
+      const posBalance  = posTotal - numberValue(state.ledger.posPrint);
+      return { cashLines, billAmount, coinAmount, cashTotal, cashBalance, balance, debitCard, creditCard, posTotal, posBalance };
+    }
+
+    function renderSummary(totals) {
+      const row = ([label, value, highlight]) => `
+        <div class="summary-row ${highlight ? "highlight" : ""}">
+          <span>${label}</span>
+          <strong class="${signedClass(numberValue(value))}">${money.format(numberValue(value))}</strong>
+        </div>`;
+
+      const cashRows = [
+        ["纸币总金额",   totals.billAmount,   false],
+        ["硬币总金额",   totals.coinAmount,   false],
+        ["期末总金额",   totals.cashTotal,    true ],
+        ["期初总金额",   state.ledger.cashBegin, false],
+        ["Cash Balance", totals.cashBalance,  true ],
+        ["Cash Print",   state.ledger.cashPrint, false]
+      ];
+
+      const posRows = [
+        ["Debit Card",  totals.debitCard,       false],
+        ["Credit Card", totals.creditCard,      false],
+        ["POS Total",   totals.posTotal,        true ],
+        ["POS Print",   state.ledger.posPrint,  false]
+      ];
+
+      summaryList.innerHTML = `
+        <div class="summary-group-title">现金结算</div>
+        ${cashRows.map(row).join("")}
+        <div class="summary-group-title">刷卡结算</div>
+        ${posRows.map(row).join("")}`;
+
+      // ── 结果英雄卡 ──
+      const bal = balanceStatus(totals.balance);
+      balanceValueEl.textContent = money.format(totals.balance);
+      balanceValueEl.className = "result-value " + bal.cls;
+      balanceBadgeEl.textContent = bal.label;
+      balanceBadgeEl.className = "result-badge " + bal.cls;
+
+      const posBal = balanceStatus(totals.posBalance);
+      posBalanceValueEl.textContent = money.format(totals.posBalance);
+      posBalanceValueEl.className = "result-value " + posBal.cls;
+      posBalanceBadgeEl.textContent = posBal.label;
+      posBalanceBadgeEl.className = "result-badge " + posBal.cls;
+
+      // ── 移动端吸底条 ──
+      mBalanceEl.textContent = money.format(totals.balance);
+      mBalanceEl.className = bal.cls;
+      mPosBalanceEl.textContent = money.format(totals.posBalance);
+      mPosBalanceEl.className = posBal.cls;
+    }
+
+    function updateOutputs(totals) {
+      denominations.forEach(item => {
+        const el = document.querySelector(`[data-output-for="count-${item.key}"]`);
+        if (el) el.textContent = money.format(numberValue(state.counts[item.key]) * item.value);
+      });
+      ledgerFields.forEach(item => {
+        const el = document.querySelector(`[data-output-for="ledger-${item.key}"]`);
+        if (el) el.textContent = money.format(numberValue(state.ledger[item.key]));
+      });
+      renderSummary(totals);
+    }
+
+    function update() {
+      updateOutputs(getTotals());
+      autosave();
+    }
+
+    // ── 自动保存（防抖写草稿） ──
+    let saveTimer = null;
+    function autosave() {
+      window.clearTimeout(saveTimer);
+      saveTimer = window.setTimeout(() => {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(state));
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        autosaveHint.textContent = `⚡ 已自动保存 ${hh}:${mm}`;
+        autosaveHint.classList.add("flash");
+        window.clearTimeout(autosave.hintTimer);
+        autosave.hintTimer = window.setTimeout(() => {
+          autosaveHint.textContent = "⚡ 自动保存已开启";
+          autosaveHint.classList.remove("flash");
+        }, 2000);
+      }, 600);
+    }
+
+    function collectFormValues() {
+      denominations.forEach(item => {
+        state.counts[item.key] = numberValue(document.querySelector(`#count-${item.key}`).value);
+      });
+      ledgerFields.forEach(item => {
+        state.ledger[item.key] = numberValue(document.querySelector(`#ledger-${item.key}`).value);
+      });
+      update();
+    }
+
+    function applyState(next) {
+      Object.assign(state.counts, next.counts || {});
+      Object.assign(state.ledger, next.ledger || {});
+      denominations.forEach(item => {
+        document.querySelector(`#count-${item.key}`).value = numberValue(state.counts[item.key]);
+      });
+      ledgerFields.forEach(item => {
+        document.querySelector(`#ledger-${item.key}`).value = numberValue(state.ledger[item.key]);
+      });
+      update();
+    }
+
+    function saveData() {
+      collectFormValues();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      showToast("✓ 已保存本次输入");
+    }
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) { showToast("暂无保存的数据"); return; }
+      try { applyState(JSON.parse(saved)); showToast("✓ 已恢复上次保存的数据"); }
+      catch { showToast("保存的数据无法读取"); }
+    }
+
+    // ── 清空（两步确认） ──
+    let resetArmed = false;
+    let resetArmTimer = null;
+    const resetButton = document.querySelector("#resetButton");
+    function resetData() {
+      if (!resetArmed) {
+        resetArmed = true;
+        resetButton.textContent = "再次点击确认";
+        resetButton.classList.add("armed");
+        window.clearTimeout(resetArmTimer);
+        resetArmTimer = window.setTimeout(disarmReset, 3000);
+        return;
+      }
+      disarmReset();
+      applyState({
+        counts: Object.fromEntries(denominations.map(i => [i.key, 0])),
+        ledger: Object.fromEntries(ledgerFields.map(i => [i.key, i.defaultValue]))
+      });
+      showToast("输入区已清空");
+    }
+    function disarmReset() {
+      resetArmed = false;
+      resetButton.textContent = "✕ 清空";
+      resetButton.classList.remove("armed");
+      window.clearTimeout(resetArmTimer);
+    }
+
+    document.querySelector("#currentDate").textContent = formatDate();
+    document.querySelector("#printDate").textContent   = formatDate();
+    document.querySelector("#printReportDate").textContent = formatDate();
+    renderInputs();
+    update();
+
+    // 启动时恢复草稿（上次未保存的输入）
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      try { applyState(JSON.parse(draft)); }
+      catch { /* 忽略损坏的草稿 */ }
+    }
+
+    document.querySelector("#settlementForm").addEventListener("input", collectFormValues);
+    inputGrid.addEventListener("click", event => {
+      const button = event.target.closest("[data-step-for]");
+      if (!button) return;
+      const input = document.querySelector(`#${button.dataset.stepFor}`);
+      const direction = Number(button.dataset.direction);
+      const step = numberValue(input.step || 1);
+      const min  = numberValue(input.min  || 0);
+      const next = Math.max(min, numberValue(input.value) + direction * step);
+      input.value = step < 1 ? next.toFixed(2) : String(next);
+      collectFormValues();
+    });
+
+    // 回车跳转到下一个输入框，加快录入
+    document.querySelector("#settlementForm").addEventListener("keydown", event => {
+      if (event.key !== "Enter") return;
+      const target = event.target;
+      if (target.tagName !== "INPUT") return;
+      event.preventDefault();
+      const inputs = Array.from(inputGrid.querySelectorAll("input"));
+      const idx = inputs.indexOf(target);
+      if (idx >= 0 && idx < inputs.length - 1) inputs[idx + 1].focus();
+    });
+
+    // ── THEME TOGGLE ──
+    const themeBtn = document.querySelector("#themeButton");
+    const savedTheme = localStorage.getItem("ccsupermarket-theme");
+    if (savedTheme === "light") {
+      document.documentElement.classList.add("light");
+      themeBtn.textContent = "☀️";
+    }
+    themeBtn.addEventListener("click", () => {
+      const isLight = document.documentElement.classList.toggle("light");
+      themeBtn.textContent = isLight ? "☀️" : "🌙";
+      localStorage.setItem("ccsupermarket-theme", isLight ? "light" : "dark");
+    });
+
+    document.querySelector("#saveButton").addEventListener("click", saveData);
+    document.querySelector("#loadButton").addEventListener("click", loadData);
+    document.querySelector("#resetButton").addEventListener("click", resetData);
+    document.querySelector("#printButton").addEventListener("click", () => window.print());
+  </script>
+</body>
+</html>
