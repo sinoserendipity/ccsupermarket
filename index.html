@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>长城超市日营业额结算</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════════════
+       DESIGN TOKENS — dark (default)
+       ══════════════════════════════════════════════════════════ */
+    :root {
+      /* surfaces */
+      --bg:             #0a0d13;
+      --surface:        #11161f;
+      --surface2:       #171d28;
+      --surface3:       #232b39;
+      --border:         #232b39;
+      --border-soft:    rgba(255,255,255,.055);
+
+      /* type */
+      --text:           #e9eef6;
+      --text-2:         #c2ccdb;
+      --muted:          #8b96a8;
+      --muted-2:        #6d7889;
+
+      /* brand & semantics */
+      --accent:         #f0b23c;
+      --accent-ink:     #1d1503;
+      --accent-soft:    rgba(240,178,60,.12);
+      --accent-line:    rgba(240,178,60,.30);
+      --accent2:        #5aa9e6;
+      --accent3:        #3ecf9b;
+      --accent4:        #f0b23c;
+      --danger:         #ef6b68;
+      --ok:             #3ecf9b;
+      --warn:           #ef6b68;
+
+      /* decoration */
+      --glow-1:         rgba(240,178,60,.07);
+      --glow-2:         rgba(90,169,230,.07);
+      --grid-line:      rgba(140,172,212,.05);
+      --panel-sheen:    rgba(255,255,255,.13);
+      --row-line:       rgba(255,255,255,.045);
+      --highlight-grad: linear-gradient(90deg,rgba(240,178,60,.10),rgba(240,178,60,.02) 58%,transparent);
+
+      /* components */
+      --topbar-bg:      rgba(10,13,19,.90);
+      --field-hover:    #1c2331;
+      --input-bg:       rgba(0,0,0,.32);
+      --ghost-bg:       rgba(255,255,255,.035);
+      --ghost-hover:    rgba(255,255,255,.075);
+      --ghost-text:     #ccd6e4;
+      --primary-grad:   linear-gradient(180deg,#f9c862,#e2a323);
+      --brand-grad:     linear-gradient(150deg,#f9cb6a,#d3941b);
+      --brand-ink:      #241a03;
+      --shadow-panel:   0 26px 54px -34px rgba(0,0,0,.95);
+      --shadow-topbar:  0 18px 44px -28px rgba(0,0,0,.95);
+      --shadow-dock:    0 28px 56px -26px rgba(0,0,0,.95);
+
+      /* metrics */
+      --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif;
+      --display: 'Syne', -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      --col-out: 112px;
+      --radius: 16px;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       DESIGN TOKENS — light
+       ══════════════════════════════════════════════════════════ */
+    :root.light {
+      --bg:             #f2f5f9;
+      --surface:        #ffffff;
+      --surface2:       #f8fafd;
+      --surface3:       #e2e9f2;
+      --border:         #dde5ef;
+      --border-soft:    #e6ecf4;
+
+      --text:           #101a28;
+      --text-2:         #3b4859;
+      --muted:          #6b7789;
+      --muted-2:        #8d99aa;
+
+      --accent:         #a86a0d;
+      --accent-ink:     #ffffff;
+      --accent-soft:    rgba(168,106,13,.09);
+      --accent-line:    rgba(168,106,13,.22);
+      --accent2:        #1f6fd0;
+      --accent3:        #0f8a5f;
+      --accent4:        #a86a0d;
+      --danger:         #cf3b38;
+      --ok:             #0f8a5f;
+      --warn:           #cf3b38;
+
+      --glow-1:         rgba(168,106,13,.06);
+      --glow-2:         rgba(31,111,208,.06);
+      --grid-line:      rgba(16,26,40,.05);
+      --panel-sheen:    rgba(16,26,40,.07);
+      --row-line:       rgba(16,26,40,.07);
+      --highlight-grad: linear-gradient(90deg,rgba(168,106,13,.10),rgba(168,106,13,.02) 58%,transparent);
+
+      --topbar-bg:      rgba(255,255,255,.90);
+      --field-hover:    #eef3f9;
+      --input-bg:       #ffffff;
+      --ghost-bg:       #f4f7fb;
+      --ghost-hover:    #e9eff7;
+      --ghost-text:     #3b4859;
+      --primary-grad:   linear-gradient(180deg,#b97b16,#96600a);
+      --brand-grad:     linear-gradient(150deg,#b97b16,#835005);
+      --brand-ink:      #ffffff;
+      --shadow-panel:   0 22px 44px -32px rgba(16,26,40,.42);
+      --shadow-topbar:  0 16px 38px -28px rgba(16,26,40,.38);
+      --shadow-dock:    0 20px 44px -20px rgba(16,26,40,.32);
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       BASE
+       ══════════════════════════════════════════════════════════ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 460px at 10% -10%, var(--glow-1), transparent 62%),
+        radial-gradient(820px 480px at 94% -14%, var(--glow-2), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.45;
+      padding-bottom: 96px;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background-color .35s ease, color .35s ease;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 64px 64px;
+      -webkit-mask-image: radial-gradient(120% 88% at 50% 0%, #000 0%, transparent 76%);
+              mask-image: radial-gradient(120% 88% at 50% 0%, #000 0%, transparent 76%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    button, input { font: inherit; }
+    button { border: 0; cursor: pointer; background: none; color: inherit; }
+
+    ::selection { background: var(--accent-soft); color: var(--text); }
+
+    :focus-visible { outline: 2px solid var(--accent-line); outline-offset: 2px; }
+
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: var(--surface3);
+      border: 3px solid transparent;
+      background-clip: padding-box;
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted-2); background-clip: padding-box; }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 22px 0 48px;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       TOPBAR
+       ══════════════════════════════════════════════════════════ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px max(20px, calc((100% - 1180px) / 2));
+      background: var(--topbar-bg);
+      border-bottom: 1px solid var(--border-soft);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+              backdrop-filter: blur(20px) saturate(150%);
+    }
+
+    .topbar-row1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      background: var(--brand-grad);
+      color: var(--brand-ink);
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 0.82rem;
+      letter-spacing: -0.04em;
+      flex-shrink: 0;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.45),
+        inset 0 -1px 0 rgba(0,0,0,.15),
+        0 8px 18px -10px rgba(0,0,0,.9);
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-size: clamp(1.08rem, 1.7vw, 1.4rem);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+      color: var(--text);
+      text-wrap: balance;
+    }
+
+    .date-line {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-family: var(--mono);
+      letter-spacing: 0.02em;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       BUTTONS
+       ══════════════════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 38px;
+      padding: 0 15px;
+      border-radius: 10px;
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .16s ease, border-color .16s ease, color .16s ease,
+                  box-shadow .16s ease, transform .12s ease;
+    }
+
+    .btn:active { transform: translateY(1px) scale(.99); }
+
+    .btn.primary {
+      background: var(--primary-grad);
+      color: var(--accent-ink);
+      border-color: rgba(0,0,0,.14);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.40), 0 10px 22px -14px rgba(240,178,60,.9);
+    }
+    .btn.primary:hover {
+      filter: brightness(1.06);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 14px 26px -14px rgba(240,178,60,.95);
+    }
+
+    .btn:not(.primary):not(.danger) {
+      background: var(--ghost-bg);
+      color: var(--ghost-text);
+      border-color: var(--border-soft);
+    }
+    .btn:not(.primary):not(.danger):hover {
+      background: var(--ghost-hover);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn.danger {
+      background: transparent;
+      color: var(--danger);
+      border-color: var(--border);
+      border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+    }
+    .btn.danger:hover {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       LAYOUT
+       ══════════════════════════════════════════════════════════ */
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 344px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       PANEL
+       ══════════════════════════════════════════════════════════ */
+    .panel {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-panel);
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--panel-sheen) 22%, var(--panel-sheen) 78%, transparent);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .layout > aside { position: sticky; top: 88px; }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--border-soft);
+      background: linear-gradient(180deg, rgba(255,255,255,.018), transparent);
+    }
+
+    .panel-header h2 {
+      display: flex;
+      align-items: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .panel-header h2::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      margin-right: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 9px var(--accent-line);
+      flex-shrink: 0;
+    }
+
+    .panel-header p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.71rem;
+      font-family: var(--mono);
+      letter-spacing: 0.02em;
+    }
+
+    .input-panel .panel-header p { display: none; }
+
+    /* ══════════════════════════════════════════════════════════
+       INPUT GRID
+       ══════════════════════════════════════════════════════════ */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 16px;
+    }
+
+    .section-title {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0 4px;
+      color: var(--accent);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .section-title:first-child { margin-top: 2px; }
+
+    .section-title::after {
+      content: '';
+      flex: 1 1 auto;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent-line), transparent);
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       FIELD ROW
+       ══════════════════════════════════════════════════════════ */
+    .field {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto var(--col-out);
+      align-items: center;
+      column-gap: 10px;
+      padding: 8px 10px 8px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border-soft);
+      border-radius: 11px;
+      transition: background .16s ease, border-color .16s ease, box-shadow .16s ease;
+    }
+    .field:hover {
+      background: var(--field-hover);
+      border-color: var(--border);
+    }
+    .field:focus-within {
+      background: var(--field-hover);
+      border-color: var(--accent-line);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .field label {
+      color: var(--text-2);
+      font-size: 0.84rem;
+      font-weight: 600;
+      letter-spacing: 0.005em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1 1 auto;
+      min-width: 0;
+      cursor: pointer;
+    }
+
+    .field-output {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      width: 100%;
+      white-space: nowrap;
+    }
+
+    .field-output span {
+      font-size: 0.57rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field-output strong {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       NUMBER CONTROL
+       ══════════════════════════════════════════════════════════ */
+    .number-control {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 5px;
+      flex: 0 0 auto;
+    }
+
+    .stepper {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border-soft);
+      border-radius: 9px;
+      background: var(--ghost-bg);
+      color: var(--text-2);
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1;
+      touch-action: manipulation;
+      flex-shrink: 0;
+      transition: background .14s ease, border-color .14s ease, color .14s ease, transform .1s ease;
+    }
+    .stepper:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent-line);
+      color: var(--accent);
+    }
+    .stepper:active { transform: scale(.92); }
+
+    .field input {
+      width: 62px;
+      height: 30px;
+      background: var(--input-bg);
+      border: 1px solid var(--border-soft);
+      border-radius: 9px;
+      padding: 0 8px;
+      text-align: right;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.86rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      outline: none;
+      transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    .field input:hover { border-color: var(--border); }
+    .field input:focus {
+      border-color: var(--accent-line);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: var(--surface);
+    }
+    .field input::-webkit-outer-spin-button,
+    .field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .field input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+    .field > .direct-input {
+      width: 104px;
+      height: 30px;
+      flex: 0 0 auto;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       SUMMARY LIST
+       ══════════════════════════════════════════════════════════ */
+    .summary-list { padding: 6px 0 8px; }
+
+    .summary-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--row-line);
+    }
+    .summary-row:last-child { border-bottom: none; }
+
+    .summary-row span:first-child {
+      color: var(--muted);
+      font-size: 0.81rem;
+      letter-spacing: 0.005em;
+    }
+
+    .summary-row strong {
+      font-family: var(--mono);
+      font-size: 0.87rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .summary-row.highlight {
+      background: var(--highlight-grad);
+    }
+    .summary-row.highlight::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 9px;
+      bottom: 9px;
+      width: 2px;
+      border-radius: 0 2px 2px 0;
+      background: var(--accent);
+      opacity: .55;
+    }
+    .summary-row.highlight span:first-child {
+      color: var(--text);
+      font-weight: 700;
+      font-size: 0.83rem;
+    }
+    .summary-row.highlight strong { font-weight: 700; }
+
+    .zero     { color: var(--text); }
+    .positive { color: var(--ok); }
+    .negative { color: var(--warn); }
+
+    /* ══════════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════════ */
+    .app-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 40px;
+      padding: 20px 16px;
+      border-top: 1px solid var(--border-soft);
+      color: var(--muted-2);
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      letter-spacing: 0.05em;
+    }
+
+    .footer-name { color: var(--muted); font-weight: 600; }
+
+    .footer-version {
+      padding: 2px 9px;
+      border: 1px solid var(--accent-line);
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .footer-sep { opacity: 0.3; }
+    .footer-author { color: var(--muted-2); }
+
+    /* ══════════════════════════════════════════════════════════
+       TOAST
+       ══════════════════════════════════════════════════════════ */
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 9999;
+      max-width: min(340px, calc(100vw - 40px));
+      padding: 12px 17px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-color: color-mix(in srgb, var(--ok) 32%, transparent);
+      border-radius: 12px;
+      color: var(--ok);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      box-shadow: inset 0 1px 0 var(--panel-sheen), 0 22px 50px -20px rgba(0,0,0,.9);
+      opacity: 0;
+      transform: translateY(14px) scale(.97);
+      pointer-events: none;
+      transition: opacity .26s ease, transform .3s cubic-bezier(.34,1.4,.64,1);
+    }
+    .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+
+    /* ══════════════════════════════════════════════════════════
+       BALANCE DOCK
+       ══════════════════════════════════════════════════════════ */
+    .dock {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 9px 12px 9px 22px;
+      background: var(--topbar-bg);
+      border: 1px solid var(--border-soft);
+      border-radius: 999px;
+      box-shadow:
+        inset 0 1px 0 var(--panel-sheen),
+        var(--shadow-dock);
+      pointer-events: none;
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+              backdrop-filter: blur(20px) saturate(150%);
+      animation: dock-in .5s cubic-bezier(.34,1.3,.64,1) both;
+    }
+
+    @keyframes dock-in {
+      from { opacity: 0; transform: translate(-50%, 18px); }
+      to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    .dock-metrics {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .dock-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .dock-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .dock-label::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: .85;
+      flex-shrink: 0;
+    }
+
+    .dock-value {
+      font-family: var(--mono);
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      transition: color .2s ease;
+    }
+
+    .dock-divider {
+      width: 1px;
+      height: 28px;
+      background: linear-gradient(180deg, transparent, var(--border), transparent);
+      flex-shrink: 0;
+    }
+
+    .dock-sep {
+      width: 1px;
+      height: 30px;
+      background: linear-gradient(180deg, transparent, var(--border), transparent);
+      flex-shrink: 0;
+    }
+
+    .dock-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .dock-actions .btn {
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+    }
+
+    .dock-actions .btn.primary {
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.40), 0 8px 18px -12px rgba(240,178,60,.9);
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       THEME TOGGLE
+       ══════════════════════════════════════════════════════════ */
+    .theme-toggle {
+      background: var(--ghost-bg);
+      color: var(--text);
+      border: 1px solid var(--border-soft);
+      min-width: 40px;
+      padding: 0;
+      font-size: 0.95rem;
+      transition: background .16s ease, border-color .16s ease, transform .2s ease;
+    }
+    .theme-toggle:hover {
+      background: var(--ghost-hover);
+      border-color: var(--border);
+      transform: rotate(-12deg);
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       RESPONSIVE
+       ══════════════════════════════════════════════════════════ */
+    @media (max-width: 1180px) {
+      .input-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; }
+      .layout > aside { position: static; top: auto; }
+    }
+
+    @media (max-width: 640px) {
+      .app { width: min(100% - 20px, 1180px); padding-top: 14px; }
+      .topbar { padding: 10px 10px; }
+      .input-grid { grid-template-columns: 1fr; }
+    }
+
+    /* dock 转为上下两层：数值在上、动作在下 */
+    @media (max-width: 880px) {
+      body { padding-bottom: 150px; }
+      .dock {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        transform: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 18px;
+        animation: dock-in-m .45s cubic-bezier(.34,1.3,.64,1) both;
+      }
+      .dock-metrics {
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .dock-item:last-child { align-items: flex-end; }
+      .dock-item:last-child .dock-label { justify-content: flex-end; }
+      .dock-sep {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--border), transparent);
+      }
+      .dock-actions { width: 100%; }
+      .dock-actions .btn { flex: 1 1 0; min-height: 42px; }
+    }
+
+    @media (max-width: 430px) {
+      .app {
+        width: 100%;
+        padding:
+          10px
+          max(10px, env(safe-area-inset-right))
+          calc(148px + env(safe-area-inset-bottom))
+          max(10px, env(safe-area-inset-left));
+      }
+
+      .topbar {
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-inline: 10px;
+        padding-bottom: 10px;
+      }
+
+      h1 { font-size: 1.14rem; }
+      .date-line { font-size: 0.7rem; }
+      .brand-mark { width: 40px; height: 40px; border-radius: 12px; font-size: 0.76rem; }
+
+      .btn { min-height: 44px; padding-inline: 8px; font-size: 0.84rem; }
+
+      .layout { gap: 12px; }
+      .layout > aside { position: static; }
+      .panel-header { padding: 12px 14px; }
+      .input-grid { gap: 6px; padding: 11px; }
+
+      .field {
+        grid-template-columns: minmax(0, 1fr) auto 92px;
+        column-gap: 8px;
+        padding: 7px 9px 7px 10px;
+      }
+      .field label { font-size: 0.8rem; }
+      .field-output { gap: 5px; }
+      .field-output span { font-size: 0.52rem; letter-spacing: 0.1em; }
+      .field-output strong { font-size: 0.78rem; }
+
+      .stepper { width: 32px; height: 32px; font-size: 1.05rem; border-radius: 10px; }
+      .field input { width: 54px; height: 32px; font-size: 0.82rem; }
+      .field > .direct-input { width: 104px; height: 32px; }
+
+      .section-title { font-size: 0.58rem; letter-spacing: 0.16em; }
+      .summary-row { padding: 9px 14px; }
+      .summary-row strong { font-size: 0.84rem; }
+
+      body { padding-bottom: 0; }
+
+      .dock {
+        bottom: max(10px, env(safe-area-inset-bottom));
+        padding: 11px 12px;
+        border-radius: 16px;
+      }
+      .dock-label { font-size: 0.54rem; letter-spacing: 0.1em; }
+      .dock-value { font-size: 1rem; }
+      .dock-divider { height: 26px; }
+      .dock-actions .btn { min-height: 44px; padding-inline: 4px; font-size: 0.8rem; }
+
+      .toast { bottom: calc(136px + env(safe-area-inset-bottom)); }
+    }
+
+    @keyframes dock-in-m {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-row1">
+      <div class="brand">
+        <div class="brand-mark">C&C</div>
+        <div>
+          <h1>长城超市日营业额结算</h1>
+          <p class="date-line" id="currentDate"></p>
+        </div>
+      </div>
+      <button class="btn theme-toggle" id="themeButton" type="button" aria-label="切换主题">🌙</button>
+    </div>
+  </header>
+
+  <main class="app">
+    <section class="layout">
+      <form class="panel input-panel" id="settlementForm">
+        <div class="panel-header">
+          <div>
+            <h2>输入区</h2>
+            <p>输入张数、枚数和POS读数，结果实时更新</p>
+          </div>
+        </div>
+        <div class="input-grid" id="inputGrid"></div>
+      </form>
+
+      <aside class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>结算汇总</h2>
+            <p id="printDate">今日报表</p>
+          </div>
+        </div>
+        <div class="summary-list" id="summaryList"></div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span class="footer-name">长城超市日营业额结算</span>
+    <span class="footer-sep">·</span>
+    <span class="footer-version">v2.2</span>
+    <span class="footer-sep">·</span>
+    <span class="footer-author">© 2026 Alan Wang</span>
+  </footer>
+
+  <div class="dock" id="balanceDock">
+    <div class="dock-metrics">
+      <div class="dock-item">
+        <span class="dock-label">Balance</span>
+        <strong class="dock-value zero" data-dock="balance">$0.00</strong>
+      </div>
+      <div class="dock-divider" aria-hidden="true"></div>
+      <div class="dock-item">
+        <span class="dock-label">POS Balance</span>
+        <strong class="dock-value zero" data-dock="pos">$0.00</strong>
+      </div>
+    </div>
+    <div class="dock-sep" aria-hidden="true"></div>
+    <div class="dock-actions">
+      <button class="btn primary" id="saveButton" type="button">💾 保存</button>
+      <button class="btn" id="loadButton" type="button">↩ 恢复</button>
+      <button class="btn danger" id="resetButton" type="button">✕ 清空</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "ccsupermarket-settlement-v2";
+    const money = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });
+
+    const denominations = [
+      { key: "100",  label: "$100",   value: 100,  type: "纸币" },
+      { key: "50",   label: "$50",    value: 50,   type: "纸币" },
+      { key: "20",   label: "$20",    value: 20,   type: "纸币" },
+      { key: "10",   label: "$10",    value: 10,   type: "纸币" },
+      { key: "5",    label: "$5",     value: 5,    type: "纸币" },
+      { key: "2",    label: "$2",     value: 2,    type: "硬币" },
+      { key: "1",    label: "$1",     value: 1,    type: "硬币" },
+      { key: "025",  label: "$0.25",  value: 0.25, type: "硬币" },
+      { key: "010",  label: "$0.10",  value: 0.1,  type: "硬币" },
+      { key: "005",  label: "$0.05",  value: 0.05, type: "硬币" }
+    ];
+
+    const ledgerFields = [
+      { key: "cashBegin",   label: "期初现金",     defaultValue: 292 },
+      { key: "cashPrint",   label: "Cash Print",   defaultValue: 0 },
+      { key: "debitBegin",  label: "Debit Begin",  defaultValue: 0 },
+      { key: "debitEnd",    label: "Debit End",    defaultValue: 0 },
+      { key: "creditBegin", label: "Credit Begin", defaultValue: 0 },
+      { key: "creditEnd",   label: "Credit End",   defaultValue: 0 },
+      { key: "posPrint",    label: "POS Print",    defaultValue: 0 }
+    ];
+
+    const state = {
+      counts: Object.fromEntries(denominations.map(i => [i.key, 0])),
+      ledger: Object.fromEntries(ledgerFields.map(i => [i.key, i.defaultValue]))
+    };
+
+    const inputGrid   = document.querySelector("#inputGrid");
+    const summaryList = document.querySelector("#summaryList");
+    const toast       = document.querySelector("#toast");
+
+    function formatDate(date = new Date()) {
+      const weekdays = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+      return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${weekdays[date.getDay()]}`;
+    }
+
+    function numberValue(value) {
+      const parsed = Number.parseFloat(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function signedClass(value) { return value < 0 ? "negative" : value > 0 ? "positive" : "zero"; }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function buildField({ id, label, value, step = "1", min = "0", output = "$0.00", stepper = true }) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "field";
+      wrapper.innerHTML = `
+        <label for="${id}">${label}</label>
+        ${stepper ? `
+          <div class="number-control">
+            <button class="stepper" type="button" data-step-for="${id}" data-direction="-1" aria-label="${label} 减少">−</button>
+            <input id="${id}" type="number" min="${min}" step="${step}" value="${value}" inputmode="decimal">
+            <button class="stepper" type="button" data-step-for="${id}" data-direction="1" aria-label="${label} 增加">+</button>
+          </div>
+        ` : `
+          <input id="${id}" class="direct-input" type="number" min="${min}" step="${step}" value="${value}" inputmode="decimal">
+        `}
+        <span class="field-output">
+          <span>小计</span>
+          <strong data-output-for="${id}">${output}</strong>
+        </span>
+      `;
+      return wrapper;
+    }
+
+    function renderInputs() {
+      inputGrid.innerHTML = "";
+      inputGrid.insertAdjacentHTML("beforeend", '<div class="section-title">现金盘点</div>');
+      denominations.forEach(item => {
+        inputGrid.appendChild(buildField({
+          id: `count-${item.key}`,
+          label: `${item.type} ${item.label}`,
+          value: state.counts[item.key]
+        }));
+      });
+      inputGrid.insertAdjacentHTML("beforeend", '<div class="section-title">系统读数</div>');
+      ledgerFields.forEach(item => {
+        inputGrid.appendChild(buildField({
+          id: `ledger-${item.key}`,
+          label: item.label,
+          value: state.ledger[item.key],
+          step: "0.01",
+          stepper: false
+        }));
+      });
+    }
+
+    function getTotals() {
+      const cashLines = denominations.map(item => ({
+        ...item,
+        count: numberValue(state.counts[item.key]),
+        amount: numberValue(state.counts[item.key]) * item.value
+      }));
+      const billAmount  = cashLines.filter(i => i.type === "纸币").reduce((t,i) => t + i.amount, 0);
+      const coinAmount  = cashLines.filter(i => i.type === "硬币").reduce((t,i) => t + i.amount, 0);
+      const cashTotal   = billAmount + coinAmount;
+      const cashBalance = cashTotal - numberValue(state.ledger.cashBegin);
+      const balance     = cashBalance - numberValue(state.ledger.cashPrint);
+      const debitCard   = numberValue(state.ledger.debitEnd)  - numberValue(state.ledger.debitBegin);
+      const creditCard  = numberValue(state.ledger.creditEnd) - numberValue(state.ledger.creditBegin);
+      const posTotal    = debitCard + creditCard;
+      const posBalance  = posTotal - numberValue(state.ledger.posPrint);
+      return { cashLines, billAmount, coinAmount, cashTotal, cashBalance, balance, debitCard, creditCard, posTotal, posBalance };
+    }
+
+    function renderSummary(totals) {
+      const rows = [
+        ["纸币总金额",    totals.billAmount,                false, signedClass(totals.billAmount)],
+        ["硬币总金额",    totals.coinAmount,                false, signedClass(totals.coinAmount)],
+        ["期末总金额",    totals.cashTotal,                 true,  signedClass(totals.cashTotal)],
+        ["期初总金额",    state.ledger.cashBegin,           false, signedClass(state.ledger.cashBegin)],
+        ["Cash Balance", totals.cashBalance,               true,  signedClass(totals.cashBalance)],
+        ["Cash Print",   state.ledger.cashPrint,           false, signedClass(state.ledger.cashPrint)],
+        ["Balance",      totals.balance,                   true,  signedClass(totals.balance)],
+        ["Debit Card",   totals.debitCard,                 false, signedClass(totals.debitCard)],
+        ["Credit Card",  totals.creditCard,                false, signedClass(totals.creditCard)],
+        ["POS Total",    totals.posTotal,                  true,  signedClass(totals.posTotal)],
+        ["POS Print",    state.ledger.posPrint,            false, signedClass(state.ledger.posPrint)],
+        ["POS Balance",  totals.posBalance,                true,  signedClass(totals.posBalance)]
+      ];
+      summaryList.innerHTML = rows.map(([label, value, highlight, cls = ""]) => `
+        <div class="summary-row ${highlight ? "highlight" : ""}">
+          <span>${label}</span>
+          <strong class="${cls}">${money.format(numberValue(value))}</strong>
+        </div>
+      `).join("");
+    }
+
+    function updateOutputs(totals) {
+      denominations.forEach(item => {
+        const el = document.querySelector(`[data-output-for="count-${item.key}"]`);
+        if (el) el.textContent = money.format(numberValue(state.counts[item.key]) * item.value);
+      });
+      ledgerFields.forEach(item => {
+        const el = document.querySelector(`[data-output-for="ledger-${item.key}"]`);
+        if (el) el.textContent = money.format(numberValue(state.ledger[item.key]));
+      });
+      renderSummary(totals);
+    }
+
+    function update() { updateOutputs(getTotals()); }
+
+    function collectFormValues() {
+      denominations.forEach(item => {
+        state.counts[item.key] = numberValue(document.querySelector(`#count-${item.key}`).value);
+      });
+      ledgerFields.forEach(item => {
+        state.ledger[item.key] = numberValue(document.querySelector(`#ledger-${item.key}`).value);
+      });
+      update();
+    }
+
+    function applyState(next) {
+      Object.assign(state.counts, next.counts || {});
+      Object.assign(state.ledger, next.ledger || {});
+      denominations.forEach(item => {
+        document.querySelector(`#count-${item.key}`).value = numberValue(state.counts[item.key]);
+      });
+      ledgerFields.forEach(item => {
+        document.querySelector(`#ledger-${item.key}`).value = numberValue(state.ledger[item.key]);
+      });
+      update();
+    }
+
+    function saveData() {
+      collectFormValues();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      showToast("✓ 已保存本次输入");
+    }
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) { showToast("暂无保存的数据"); return; }
+      try { applyState(JSON.parse(saved)); showToast("✓ 已恢复上次保存的数据"); }
+      catch { showToast("保存的数据无法读取"); }
+    }
+
+    function resetData() {
+      applyState({
+        counts: Object.fromEntries(denominations.map(i => [i.key, 0])),
+        ledger: Object.fromEntries(ledgerFields.map(i => [i.key, i.defaultValue]))
+      });
+      showToast("输入区已清空");
+    }
+
+    document.querySelector("#currentDate").textContent = formatDate();
+    document.querySelector("#printDate").textContent   = formatDate();
+    renderInputs();
+    update();
+
+    document.querySelector("#settlementForm").addEventListener("input", collectFormValues);
+    inputGrid.addEventListener("click", event => {
+      const button = event.target.closest("[data-step-for]");
+      if (!button) return;
+      const input = document.querySelector(`#${button.dataset.stepFor}`);
+      const direction = Number(button.dataset.direction);
+      const step = numberValue(input.step || 1);
+      const min  = numberValue(input.min  || 0);
+      const next = Math.max(min, numberValue(input.value) + direction * step);
+      input.value = step < 1 ? next.toFixed(2) : String(next);
+      collectFormValues();
+    });
+
+    // ── THEME TOGGLE ──
+    const themeBtn = document.querySelector("#themeButton");
+    const savedTheme = localStorage.getItem("ccsupermarket-theme");
+    if (savedTheme === "light") {
+      document.documentElement.classList.add("light");
+      themeBtn.textContent = "☀️";
+    }
+    themeBtn.addEventListener("click", () => {
+      const isLight = document.documentElement.classList.toggle("light");
+      themeBtn.textContent = isLight ? "☀️" : "🌙";
+      localStorage.setItem("ccsupermarket-theme", isLight ? "light" : "dark");
+    });
+    document.querySelector("#saveButton").addEventListener("click", saveData);
+    document.querySelector("#loadButton").addEventListener("click", loadData);
+    document.querySelector("#resetButton").addEventListener("click", resetData);
+  </script>
+
+  <script>
+    /* ── 底部 DOCK：仅镜像汇总区已渲染的数值，不参与任何计算 ── */
+    (function () {
+      const dock = document.querySelector("#balanceDock");
+      const list = document.querySelector("#summaryList");
+      if (!dock || !list) return;
+
+      const slots = {
+        "Balance":      dock.querySelector('[data-dock="balance"]'),
+        "POS Balance":  dock.querySelector('[data-dock="pos"]')
+      };
+
+      function sync() {
+        list.querySelectorAll(".summary-row").forEach(row => {
+          const label = row.querySelector("span");
+          const value = row.querySelector("strong");
+          const slot  = label ? slots[label.textContent.trim()] : null;
+          if (!slot || !value) return;
+          slot.textContent = value.textContent;
+          slot.className = "dock-value " + (value.className || "zero");
+        });
+      }
+
+      new MutationObserver(sync).observe(list, { childList: true, subtree: true, characterData: true });
+      sync();
+    })();
+  </script>
+</body>
+</html>
